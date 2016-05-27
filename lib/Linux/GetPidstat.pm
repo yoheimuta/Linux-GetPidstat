@@ -8,6 +8,7 @@ our $VERSION = "0.01";
 use Time::Piece;
 use Parallel::ForkManager;
 use WebService::Mackerel;
+use Linux::GetPidstat::Input;
 
 my $t = localtime;
 my $convert_from_kilobytes = sub { my $raw = shift; return $raw * 1000 };
@@ -54,36 +55,15 @@ sub new {
 sub run {
     my $self = shift;
 
-    opendir my $pid_dir, $self->{pid_dir}
-        or die "failed to opendir:$!, name=" . $self->{pid_dir};
-
-    my @pid_files;
-    foreach(readdir $pid_dir){
-        next if /^\.{1,2}$/;
-
-        my $path = $self->{pid_dir} . "/$_";
-        my $ok = open my $pid_file, '<', $path;
-        unless ($ok) {
-            print "failed to open: err=$!, path=$path\n";
-            next;
-        }
-        chomp(my $pid = <$pid_file>);
-        close $pid_file;
-
-        unless ($pid =~ /^[0-9]+$/) {
-            print "invalid pid: value=$pid\n";
-            next;
-        }
-        push @pid_files, { $_ => $pid };
-    }
-    closedir($pid_dir);
-
-    die "not found pids in pid_dir: " . $self->{pid_dir} unless @pid_files;
-
-    $self->include_child_pids(\@pid_files) if $self->{include_child};
+    my $reader = Linux::GetPidstat::Input->new(
+        pid_dir       => $self->{pid_dir},
+        include_child => $self->{include_child},
+        dry_run       => $self->{dry_run},
+    );
+    my $pid_files = $reader->get_pids;
 
     my @loop;
-    for my $info (@pid_files) {
+    for my $info (@{$pid_files}) {
         while (my ($cmd_name, $pid) = each %$info) {
             push @loop, {
                 cmd => $cmd_name,
@@ -127,47 +107,11 @@ sub run {
     $self->write_ret($ret_pidstats);
 }
 
-sub include_child_pids {
-    my ($self, $pid_files) = @_;
-
-    my @append_files;
-    for my $info (@$pid_files) {
-        while (my ($cmd_name, $pid) = each %$info) {
-            my $child_pids = $self->_search_child_pids($pid);
-            for my $child_pid (@$child_pids) {
-                unless ($child_pid =~ /^[0-9]+$/) {
-                    print "invalid child_pid: value=$child_pid\n";
-                    next;
-                }
-                push @append_files, { $cmd_name => $child_pid };
-            }
-        }
-    }
-
-    push @$pid_files, @append_files;
-}
-
-sub _search_child_pids {
-    my ($self, $pid) = @_;
-    my $command = do {
-        if ($self->{dry_run}) {
-            "cat ./source/pstree_$pid.txt";
-        } else {
-            "pstree -pn $pid |grep -o '([[:digit:]]*)' |grep -o '[[:digit:]]*'";
-        }
-    };
-    my $output = `$command`;
-    return [] unless $output;
-
-    chomp(my @child_pids = split '\n', $output);
-    return [grep { $_ != $pid } @child_pids];
-}
-
 sub get_pidstat {
     my ($self, $pid) = @_;
     my $command = do {
         if ($self->{dry_run}) {
-            "sleep 2; cat ./source/metric.txt";
+            "cat ./source/metric.txt";
         } else {
             my $run_sec = $self->{interval};
             "pidstat -h -u -r -s -d -w -p $pid 1 $run_sec";
