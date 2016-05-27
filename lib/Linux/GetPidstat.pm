@@ -245,8 +245,11 @@ sub write_ret {
             }
 
             if ($self->{mackerel_api_key} && $self->{mackerel_service_name}) {
-                my $content = $self->_send_mackerel($cmd_name, $mname, $mvalue);
-                print "mackerel post: $content\n" if $self->{dry_run};
+                if ($self->{dry_run}) {
+                    print "mackerel post: cmd_name=$cmd_name, mname=$mname, mvalue=$mvalue\n";
+                } else {
+                    $self->_send_mackerel($cmd_name, $mname, $mvalue);
+                }
             }
         }
     }
