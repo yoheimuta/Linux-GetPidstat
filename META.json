@@ -1,5 +1,5 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Run pidstat -w -s -u -d -r commands in parallel to monitor each process metrics avg/1min",
    "author" : [
       "yoheimuta <yoheimuta@gmail.com>"
    ],
@@ -42,6 +42,9 @@
       },
       "runtime" : {
          "requires" : {
+            "IO::Socket::SSL" : "== 2.024",
+            "Parallel::ForkManager" : "== 1.17",
+            "WebService::Mackerel" : "== 0.03",
             "perl" : "5.008001"
          }
       },
