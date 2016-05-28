@@ -11,26 +11,31 @@ use Linux::GetPidstat::Collector;
 use Linux::GetPidstat::Writer;
 
 sub new {
-    my ( $class, %opt ) = @_;
-    bless \%opt, $class;
+    my $class = shift;
+    bless {}, $class;
 }
 
 sub run {
-    my $self = shift;
+    my ($self, %args) = @_;
+
+    my $pid_dir_path = $args{pid_dir};
+    unless (length $pid_dir_path) {
+        Carp::croak("pid_dir required");
+    }
 
     my $program_pid_mapping = Linux::GetPidstat::Reader->new(
-        pid_dir       => $self->{pid_dir},
-        include_child => $self->{include_child},
-        dry_run       => $self->{dry_run},
+        pid_dir       => $pid_dir_path,
+        include_child => $args{include_child},
+        dry_run       => $args{dry_run},
     )->get_program_pid_mapping;
 
     unless (@$program_pid_mapping) {
-        croak "Not found pids in pid_dir: " . $self->{pid_dir};
+        croak "Not found pids in pid_dir: $pid_dir_path";
     }
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
-        interval => $self->{interval},
-        dry_run  => $self->{dry_run},
+        interval => $args{interval},
+        dry_run  => $args{dry_run},
     )->get_pidstats_results($program_pid_mapping);
 
     unless (%$ret_pidstats) {
@@ -38,10 +43,10 @@ sub run {
     }
 
     Linux::GetPidstat::Writer->new(
-        res_file              => $self->{res_file},
-        mackerel_api_key      => $self->{mackerel_api_key},
-        mackerel_service_name => $self->{mackerel_service_name},
-        dry_run               => $self->{dry_run},
+        res_file              => $args{res_file},
+        mackerel_api_key      => $args{mackerel_api_key},
+        mackerel_service_name => $args{mackerel_service_name},
+        dry_run               => $args{dry_run},
     )->output($ret_pidstats);
 }
 

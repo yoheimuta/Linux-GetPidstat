@@ -13,10 +13,15 @@ my %cli_default_opt = (
     dry_run       => '1'
 );
 
+my $instance = Linux::GetPidstat->new;
+
+like exception {
+    $instance->run;
+}, qr/pid_dir required/, "no pid_dir is not allowed";
+
 subtest 'output to a file' => sub {
-    my $instance = Linux::GetPidstat->new(%cli_default_opt);
     my ($stdout, $stderr) = capture {
-        $instance->run;
+        $instance->run(%cli_default_opt);
     };
     my @stdout_lines = split /\n/, $stdout;
     is scalar @stdout_lines, 25 or diag $stdout;
@@ -27,9 +32,8 @@ $cli_default_opt{mackerel_api_key}      = 'dummy_key';
 $cli_default_opt{mackerel_service_name} = 'dummy_name';
 
 subtest 'output to a file and mackerel' => sub {
-    my $instance = Linux::GetPidstat->new(%cli_default_opt);
     my ($stdout, $stderr) = capture {
-        $instance->run;
+        $instance->run(%cli_default_opt);
     };
     my @stdout_lines = split /\n/, $stdout;
     is scalar @stdout_lines, 43, or diag $stdout;
