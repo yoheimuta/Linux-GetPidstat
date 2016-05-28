@@ -3,7 +3,6 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 use Capture::Tiny qw/capture/;
-use Data::Section::Simple qw(get_data_section);
 
 use Linux::GetPidstat;
 
@@ -20,8 +19,8 @@ subtest 'output to a file' => sub {
         $instance->run;
     };
     my @stdout_lines = split /\n/, $stdout;
-    is scalar @stdout_lines, 25 or diag @stdout_lines;
-    is $stderr, '';
+    is scalar @stdout_lines, 25 or diag $stdout;
+    is $stderr, '' or diag $stderr;
 };
 
 $cli_default_opt{mackerel_api_key}      = 'dummy_key';
@@ -33,8 +32,8 @@ subtest 'output to a file and mackerel' => sub {
         $instance->run;
     };
     my @stdout_lines = split /\n/, $stdout;
-    is scalar @stdout_lines, 43, or diag @stdout_lines;
-    is $stderr, '';
+    is scalar @stdout_lines, 43, or diag $stdout;
+    is $stderr, '' or diag $stderr;
 };
 
 done_testing;

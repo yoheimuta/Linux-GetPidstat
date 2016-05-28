@@ -24,29 +24,29 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     is_deeply $ret, {
         'backup_mysql' => [
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
             }
         ],
         'summarize_log' => [
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
-            }
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
+                }
         ]
     } or diag explain $ret;
 }
@@ -62,50 +62,50 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     is_deeply $ret, {
         'backup_mysql' => [
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
             }
         ],
         'summarize_log' => [
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
             },
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
             },
             {
-                'cpu' => '21.20',
-                'cswch_per_sec' => '19.87',
-                'disk_read_per_sec' => '0.00',
+                'cpu'                => '21.20',
+                'cswch_per_sec'      => '19.87',
+                'disk_read_per_sec'  => '0.00',
                 'disk_write_per_sec' => '0.00',
-                'memory_percent' => '34.63',
-                'memory_rss' => '10881534000.00',
-                'nvcswch_per_sec' => '30.45',
-                'stk_ref' => '25500.00',
-                'stk_size' => '128500.00'
+                'memory_percent'     => '34.63',
+                'memory_rss'         => '10881534000.00',
+                'nvcswch_per_sec'    => '30.45',
+                'stk_ref'            => '25500.00',
+                'stk_size'           => '128500.00'
             }
         ]
     } or diag explain $ret;
