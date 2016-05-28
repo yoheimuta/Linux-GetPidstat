@@ -47,7 +47,7 @@ sub get_pidstats_results {
     }
     $pm->wait_all_children;
 
-    return $ret_pidstats;
+    return summarize($ret_pidstats);
 }
 
 sub get_pidstat {
@@ -65,6 +65,23 @@ sub get_pidstat {
 
     my @lines = split '\n', $output;
     return parse_pidstat_output(\@lines);
+}
+
+sub summarize($) {
+    my $ret_pidstats = shift;
+
+    my $summary = {};
+
+    # in : backup_mysql => [ { cpu => 21.0... } ... ] ...
+    # out: backup_mysql => { cpu => 42.0 } ... } ...
+    while (my ($program_name, $rets) = each %$ret_pidstats) {
+        for my $ret (@{$rets}) {
+            while (my ($metric_name, $metric) = each %$ret) {
+                $summary->{$program_name}->{$metric_name} += $metric;
+            }
+        }
+    }
+    return $summary;
 }
 
 1;

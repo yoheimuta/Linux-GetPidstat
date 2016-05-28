@@ -16,15 +16,6 @@ sub new {
 sub output {
     my ($self, $ret_pidstats) = @_;
 
-    my $summary;
-    while (my ($cmd_name, $rets) = each %$ret_pidstats) {
-        for my $ret (@{$rets}) {
-            while (my ($mname, $mvalue) = each %$ret) {
-                $summary->{$cmd_name}->{$mname} += $mvalue;
-            }
-        }
-    }
-
     my $file;
     if ($self->{res_file} || $self->{dry_run}) {
         $file = Linux::GetPidstat::Writer::File->new(
@@ -45,7 +36,7 @@ sub output {
     }
 
     # ex. backup_mysql => { cpu => 21.0 }
-    while (my ($program_name, $s) = each %$summary) {
+    while (my ($program_name, $s) = each %$ret_pidstats) {
         while (my ($metric_name, $metric) = each %$s) {
             if ($file) {
                 $file->output($program_name, $metric_name, $metric);
