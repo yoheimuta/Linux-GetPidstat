@@ -52,6 +52,7 @@
       },
       "test" : {
          "requires" : {
+            "Test::Mock::Guard" : "0.10",
             "Test::More" : "0.98"
          }
       }
