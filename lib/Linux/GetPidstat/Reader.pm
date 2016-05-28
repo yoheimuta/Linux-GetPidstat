@@ -1,4 +1,4 @@
-package Linux::GetPidstat::Input;
+package Linux::GetPidstat::Reader;
 use 5.008001;
 use strict;
 use warnings;
@@ -94,13 +94,13 @@ __END__
 
 =head1 NAME
 
-Linux::GetPidstat::Input - Collect pids from a pid dir path
+Linux::GetPidstat::Reader - Collect pids from a pid dir path
 
 =head1 SYNOPSIS
 
-    use Linux::GetPidstat::Input;
+    use Linux::GetPidstat::Reader;
 
-    my $instance = Linux::GetPidstat::Input->new(
+    my $instance = Linux::GetPidstat::Reader->new(
         pid_dir       => './pid',
         include_child => 1,
         dry_run       => 1,

@@ -5,9 +5,9 @@ use warnings;
 
 our $VERSION = "0.01";
 
-use Linux::GetPidstat::Input;
+use Linux::GetPidstat::Reader;
 use Linux::GetPidstat::Collector;
-use Linux::GetPidstat::Output;
+use Linux::GetPidstat::Writer;
 
 sub new {
     my ( $class, %opt ) = @_;
@@ -17,7 +17,7 @@ sub new {
 sub run {
     my $self = shift;
 
-    my $cmd_pid_mapping = Linux::GetPidstat::Input->new(
+    my $cmd_pid_mapping = Linux::GetPidstat::Reader->new(
         pid_dir       => $self->{pid_dir},
         include_child => $self->{include_child},
         dry_run       => $self->{dry_run},
@@ -28,7 +28,7 @@ sub run {
         dry_run  => $self->{dry_run},
     )->get_pidstats_results($cmd_pid_mapping);
 
-    Linux::GetPidstat::Output->new(
+    Linux::GetPidstat::Writer->new(
         res_file              => $self->{res_file},
         mackerel_api_key      => $self->{mackerel_api_key},
         mackerel_service_name => $self->{mackerel_service_name},

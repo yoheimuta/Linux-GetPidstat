@@ -3,7 +3,7 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 
-use Linux::GetPidstat::Input;
+use Linux::GetPidstat::Reader;
 
 my %opt = (
     pid_dir       => './pid',
@@ -12,11 +12,11 @@ my %opt = (
 );
 
 is exception {
-    my $instance = Linux::GetPidstat::Input->new(%opt);
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
 }, undef, "create ok";
 
 subtest 'include_child 0' => sub {
-    my $instance = Linux::GetPidstat::Input->new(%opt);
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
     my $mapping  = $instance->get_cmd_pid_mapping;
     is scalar @$mapping, 2 or diag explain $mapping;
 
@@ -32,7 +32,7 @@ subtest 'include_child 0' => sub {
 
 $opt{include_child} = 1;
 subtest 'include_child 1' => sub {
-    my $instance = Linux::GetPidstat::Input->new(%opt);
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
     my $mapping  = $instance->get_cmd_pid_mapping;
     is scalar @$mapping, 7 or diag explain $mapping;
 

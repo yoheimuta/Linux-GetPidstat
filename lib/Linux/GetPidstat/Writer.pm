@@ -1,4 +1,4 @@
-package Linux::GetPidstat::Output;
+package Linux::GetPidstat::Writer;
 use 5.008001;
 use strict;
 use warnings;
@@ -73,13 +73,13 @@ __END__
 
 =head1 NAME
 
-Linux::GetPidstat::Output - Write pidstat's results to destinations
+Linux::GetPidstat::Writer - Write pidstat's results to destinations
 
 =head1 SYNOPSIS
 
-    use Linux::GetPidstat::Output;
+    use Linux::GetPidstat::Writer;
 
-    my $instance = Linux::GetPidstat::Output->new(
+    my $instance = Linux::GetPidstat::Writer->new(
         res_file              => './res',
         mackerel_api_key      => '',
         mackerel_service_name => '',
