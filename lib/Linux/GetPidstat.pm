@@ -56,26 +56,15 @@ sub new {
 sub run {
     my $self = shift;
 
-    my $reader = Linux::GetPidstat::Input->new(
+    my $cmd_pid_mapping = Linux::GetPidstat::Input->new(
         pid_dir       => $self->{pid_dir},
         include_child => $self->{include_child},
         dry_run       => $self->{dry_run},
-    );
-    my $pid_files = $reader->get_pids;
-
-    my @loop;
-    for my $info (@{$pid_files}) {
-        while (my ($cmd_name, $pid) = each %$info) {
-            push @loop, {
-                cmd => $cmd_name,
-                pid => $pid,
-            };
-        }
-    }
+    )->get_cmd_pid_mapping;
 
     my $ret_pidstats;
 
-    my $pm = Parallel::ForkManager->new(scalar @loop);
+    my $pm = Parallel::ForkManager->new(scalar @$cmd_pid_mapping);
     $pm->run_on_finish(sub {
         if (my $ret = $_[5]) {
             my ($cmd_name, $ret_pidstat) = @$ret;
@@ -86,7 +75,7 @@ sub run {
     });
 
     METHODS:
-    for my $info (@loop) {
+    for my $info (@$cmd_pid_mapping) {
         my $cmd_name    = $info->{cmd};
         my $pid         = $info->{pid};
 
@@ -105,13 +94,12 @@ sub run {
     }
     $pm->wait_all_children;
 
-    my $writer = Linux::GetPidstat::Output->new(
+    Linux::GetPidstat::Output->new(
         res_file              => $self->{res_file},
         mackerel_api_key      => $self->{mackerel_api_key},
         mackerel_service_name => $self->{mackerel_service_name},
         dry_run               => $self->{dry_run},
-    );
-    $writer->output($ret_pidstats);
+    )->output($ret_pidstats);
 }
 
 sub get_pidstat {

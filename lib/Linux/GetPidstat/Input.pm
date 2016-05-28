@@ -8,7 +8,7 @@ sub new {
     bless \%opt, $class;
 }
 
-sub get_pids {
+sub get_cmd_pid_mapping {
     my $self = shift;
 
     opendir my $pid_dir, $self->{pid_dir}
@@ -38,7 +38,17 @@ sub get_pids {
     die "not found pids in pid_dir: " . $self->{pid_dir} unless @pid_files;
 
     $self->include_child_pids(\@pid_files) if $self->{include_child};
-    return \@pid_files;
+
+    my @cmd_pid_mapping;
+    for my $info (@pid_files) {
+        while (my ($cmd_name, $pid) = each %$info) {
+            push @cmd_pid_mapping, {
+                cmd => $cmd_name,
+                pid => $pid,
+            };
+        }
+    }
+    return \@cmd_pid_mapping;
 }
 
 sub include_child_pids {
