@@ -17,14 +17,14 @@ is exception {
 
 subtest 'include_child 0' => sub {
     my $instance = Linux::GetPidstat::Reader->new(%opt);
-    my $mapping  = $instance->get_cmd_pid_mapping;
+    my $mapping  = $instance->get_program_pid_mapping;
     is scalar @$mapping, 2 or diag explain $mapping;
 
     my $got;
     for my $info (@$mapping) {
-        my $cmd_name    = $info->{cmd};
-        my $pid         = $info->{pid};
-        push @{$got->{$cmd_name}}, $pid;
+        my $program_name = $info->{program_name};
+        my $pid          = $info->{pid};
+        push @{$got->{$program_name}}, $pid;
     }
     is_deeply [sort { $a <=> $b } @{$got->{target_script}}] , [1] or diag explain $got;
     is_deeply [sort { $a <=> $b } @{$got->{target_script2}}], [2] or diag explain $got;
@@ -33,14 +33,14 @@ subtest 'include_child 0' => sub {
 $opt{include_child} = 1;
 subtest 'include_child 1' => sub {
     my $instance = Linux::GetPidstat::Reader->new(%opt);
-    my $mapping  = $instance->get_cmd_pid_mapping;
+    my $mapping  = $instance->get_program_pid_mapping;
     is scalar @$mapping, 7 or diag explain $mapping;
 
     my $got;
     for my $info (@$mapping) {
-        my $cmd_name    = $info->{cmd};
-        my $pid         = $info->{pid};
-        push @{$got->{$cmd_name}}, $pid;
+        my $program_name = $info->{program_name};
+        my $pid          = $info->{pid};
+        push @{$got->{$program_name}}, $pid;
     }
 
     is_deeply [sort { $a <=> $b } @{$got->{target_script}}] , [1] or diag explain $got;

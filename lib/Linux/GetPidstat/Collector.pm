@@ -13,37 +13,37 @@ sub new {
 }
 
 sub get_pidstats_results {
-    my ($self, $cmd_pid_mapping) = @_;
+    my ($self, $program_pid_mapping) = @_;
 
     my $ret_pidstats;
 
-    my $pm = Parallel::ForkManager->new(scalar @$cmd_pid_mapping);
+    my $pm = Parallel::ForkManager->new(scalar @$program_pid_mapping);
     $pm->run_on_finish(sub {
         if (my $ret = $_[5]) {
-            my ($cmd_name, $ret_pidstat) = @$ret;
-            push @{$ret_pidstats->{$cmd_name}}, $ret_pidstat;
+            my ($program_name, $ret_pidstat) = @$ret;
+            push @{$ret_pidstats->{$program_name}}, $ret_pidstat;
         } else {
-            carp "failed to collect metrics";
+            carp "Failed to collect metrics";
         }
     });
 
     METHODS:
-    for my $info (@$cmd_pid_mapping) {
-        my $cmd_name    = $info->{cmd};
-        my $pid         = $info->{pid};
+    for my $info (@$program_pid_mapping) {
+        my $program_name = $info->{program_name};
+        my $pid          = $info->{pid};
 
         if (my $child_pid = $pm->start) {
-            printf "child_pid=%d, cmd_name=%s, target_pid=%d\n",
-                $child_pid, $cmd_name, $pid;
+            printf "child_pid=%d, program_name=%s, target_pid=%d\n",
+                $child_pid, $program_name, $pid;
             next METHODS;
         }
 
         my $ret_pidstat = $self->get_pidstat($pid);
         unless ($ret_pidstat && %$ret_pidstat) {
-            croak "failed getting pidstat: pid=$$, target_pid=$pid, cmd_name=$cmd_name";
+            croak "Failed getting pidstat: pid=$$, target_pid=$pid, program_name=$program_name";
         }
 
-        $pm->finish(0, [$cmd_name, $ret_pidstat]);
+        $pm->finish(0, [$program_name, $ret_pidstat]);
     }
     $pm->wait_all_children;
 
@@ -83,6 +83,6 @@ Linux::GetPidstat::Collector - Collect pidstats' results
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => '60',
         dry_run  => '0',
-    )->get_pidstats_results($cmd_pid_mapping);
+    )->get_pidstats_results($program_pid_mapping);
 
 =cut

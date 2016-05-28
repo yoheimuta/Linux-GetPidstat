@@ -18,20 +18,24 @@ sub new {
 sub run {
     my $self = shift;
 
-    my $cmd_pid_mapping = Linux::GetPidstat::Reader->new(
+    my $program_pid_mapping = Linux::GetPidstat::Reader->new(
         pid_dir       => $self->{pid_dir},
         include_child => $self->{include_child},
         dry_run       => $self->{dry_run},
-    )->get_cmd_pid_mapping;
+    )->get_program_pid_mapping;
 
-    unless (@$cmd_pid_mapping) {
+    unless (@$program_pid_mapping) {
         croak "Not found pids in pid_dir: " . $self->{pid_dir};
     }
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => $self->{interval},
         dry_run  => $self->{dry_run},
-    )->get_pidstats_results($cmd_pid_mapping);
+    )->get_pidstats_results($program_pid_mapping);
+
+    unless (%$ret_pidstats) {
+        croak "Failed to collect metrics";
+    }
 
     Linux::GetPidstat::Writer->new(
         res_file              => $self->{res_file},

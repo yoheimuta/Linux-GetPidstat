@@ -18,8 +18,8 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
 
 {
     my $ret = $instance->get_pidstats_results([
-        { cmd => 'backup_mysql' , pid => '14423' },
-        { cmd => 'summarize_log', pid => '14530' },
+        { program_name => 'backup_mysql' , pid => '14423' },
+        { program_name => 'summarize_log', pid => '14530' },
     ]);
     is_deeply $ret, {
         'backup_mysql' => [
@@ -54,10 +54,10 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
 
 {
     my $ret = $instance->get_pidstats_results([
-        { cmd => 'backup_mysql' , pid => '14423' },
-        { cmd => 'summarize_log', pid => '14530' },
-        { cmd => 'summarize_log', pid => '14533' }, # child process
-        { cmd => 'summarize_log', pid => '14534' }, # child process
+        { program_name => 'backup_mysql' , pid => '14423' },
+        { program_name => 'summarize_log', pid => '14530' },
+        { program_name => 'summarize_log', pid => '14533' }, # child process
+        { program_name => 'summarize_log', pid => '14534' }, # child process
     ]);
     is_deeply $ret, {
         'backup_mysql' => [

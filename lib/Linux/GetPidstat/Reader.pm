@@ -11,12 +11,12 @@ sub new {
     bless \%opt, $class;
 }
 
-sub get_cmd_pid_mapping {
+sub get_program_pid_mapping {
     my $self = shift;
 
     my $pid_dir = path($self->{pid_dir});
 
-    my @cmd_pid_mapping;
+    my @program_pid_mapping;
     for my $pid_file ($pid_dir->children) {
         chomp(my $pid = $pid_file->slurp);
         unless (_is_valid_pid($pid)) {
@@ -32,14 +32,14 @@ sub get_cmd_pid_mapping {
         }
 
         for (@pids) {
-            push @cmd_pid_mapping, {
-                cmd => $pid_file->basename,
-                pid => $_+0,
+            push @program_pid_mapping, {
+                program_name => $pid_file->basename,
+                pid          => $_+0,
             };
         }
     }
 
-    return \@cmd_pid_mapping;
+    return \@program_pid_mapping;
 }
 
 sub search_child_pids {
@@ -85,6 +85,6 @@ Linux::GetPidstat::Reader - Collect pids from a pid dir path
         include_child => 1,
         dry_run       => 1,
     );
-    my $pids = $instance->get_pids;
+    my $pids = $instance->get_program_pid_mapping;
 
 =cut

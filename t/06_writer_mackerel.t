@@ -40,7 +40,7 @@ is exception {
     my @stdout_lines = split /\n/, $stdout;
     is scalar @stdout_lines, 1 or diag $stdout;
     is $stdout_lines[0],
-        'mackerel post: name=custom.batch_cpu.backup_mysql, time=12345, mvalue=21.20';
+        'mackerel post: name=custom.batch_cpu.backup_mysql, time=12345, metric=21.20';
     is $stderr, '';
 
     is $guard->call_count('WebService::Mackerel', 'new'), 1;

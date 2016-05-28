@@ -44,14 +44,15 @@ sub output {
         );
     }
 
-    while (my ($cmd_name, $s) = each %$summary) {
-        while (my ($mname, $mvalue) = each %$s) {
+    # ex. backup_mysql => { cpu => 21.0 }
+    while (my ($program_name, $s) = each %$summary) {
+        while (my ($metric_name, $metric) = each %$s) {
             if ($file) {
-                $file->output($cmd_name, $mname, $mvalue);
+                $file->output($program_name, $metric_name, $metric);
             }
 
             if ($mackerel) {
-                $mackerel->output($cmd_name, $mname, $mvalue);
+                $mackerel->output($program_name, $metric_name, $metric);
             }
         }
     }

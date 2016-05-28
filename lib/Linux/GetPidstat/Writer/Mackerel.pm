@@ -19,19 +19,19 @@ sub new {
 }
 
 sub output {
-    my ($self, $cmd_name, $mname, $mvalue) = @_;
-    my $graph_name = "custom.batch_$mname.$cmd_name";
+    my ($self, $program_name, $metric_name, $metric) = @_;
+    my $graph_name = "custom.batch_$metric_name.$program_name";
 
     if ($self->{dry_run}) {
-        printf "mackerel post: name=%s, time=%s, mvalue=%s\n",
-            $graph_name, $self->{now}->epoch, $mvalue;
+        printf "mackerel post: name=%s, time=%s, metric=%s\n",
+            $graph_name, $self->{now}->epoch, $metric;
         return;
     }
 
     $self->{mackerel}->post_service_metrics([{
         "name"  => $graph_name,
         "time"  => $self->{now}->epoch,
-        "value" => $mvalue,
+        "value" => $metric,
     }]);
 }
 

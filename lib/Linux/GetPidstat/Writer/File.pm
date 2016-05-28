@@ -19,11 +19,11 @@ sub new {
 }
 
 sub output {
-    my ($self, $cmd_name, $mname, $mvalue) = @_;
+    my ($self, $program_name, $metric_name, $metric) = @_;
 
     # datetime は目視確認用に追加
     my $msg = join ",", $self->{now}->datetime, $self->{now}->epoch,
-        $cmd_name, $mname, $mvalue;
+        $program_name, $metric_name, $metric;
 
     if ($self->{dry_run}) {
         print "$msg\n";
