@@ -3,43 +3,9 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Carp;
 use Parallel::ForkManager;
-
-my $convert_from_kilobytes = sub { my $raw = shift; return $raw * 1000 };
-my $metric_param = {
-    cpu => {
-        column_num   => 6,
-    },
-    memory_percent => {
-        column_num   => 12,
-    },
-    memory_rss => {
-        column_num   => 11,
-        convert_func => $convert_from_kilobytes,
-    },
-    stk_size => {
-        column_num   => 13,
-        convert_func => $convert_from_kilobytes,
-    },
-    stk_ref => {
-        column_num   => 14,
-        convert_func => $convert_from_kilobytes,
-    },
-    disk_read_per_sec => {
-        column_num   => 15,
-        convert_func => $convert_from_kilobytes,
-    },
-    disk_write_per_sec => {
-        column_num   => 16,
-        convert_func => $convert_from_kilobytes,
-    },
-    cswch_per_sec => {
-        column_num   => 18,
-    },
-    nvcswch_per_sec => {
-        column_num   => 19,
-    },
-};
+use Linux::GetPidstat::Collector::Parser;
 
 sub new {
     my ( $class, %opt ) = @_;
@@ -57,7 +23,7 @@ sub get_pidstats_results {
             my ($cmd_name, $ret_pidstat) = @$ret;
             push @{$ret_pidstats->{$cmd_name}}, $ret_pidstat;
         } else {
-            print "failed to collect metrics\n";
+            carp "failed to collect metrics";
         }
     });
 
@@ -74,7 +40,7 @@ sub get_pidstats_results {
 
         my $ret_pidstat = $self->get_pidstat($pid);
         unless ($ret_pidstat && %$ret_pidstat) {
-            die "failed getting pidstat: pid=$$, target_pid=$pid, cmd_name=$cmd_name";
+            croak "failed getting pidstat: pid=$$, target_pid=$pid, cmd_name=$cmd_name";
         }
 
         $pm->finish(0, [$cmd_name, $ret_pidstat]);
@@ -95,47 +61,10 @@ sub get_pidstat {
         }
     };
     my $output = `$command`;
-    die "failed command: $command, pid=$$" unless $output;
+    croak "failed command: $command, pid=$$" unless $output;
 
     my @lines = split '\n', $output;
-    return $self->_parse_ret(\@lines);
-}
-
-sub _parse_ret {
-    my ($self, $lines) = @_;
-
-    my $ret;
-
-    while (my ($mname, $param) = each %$metric_param) {
-        my @metrics;
-        for (@$lines) {
-            my @num = split " ";
-            #print "$_,\n" for @num;
-            my $m = $num[$param->{column_num}];
-            next unless $m;
-            next unless $m =~ /^[0-9.]+$/;
-            if (my $cf = $param->{convert_func}) {
-                push @metrics, $cf->($m);
-            } else {
-                push @metrics, $m;
-            }
-        }
-        unless (@metrics) {
-            printf "empty metrics: mname=%s, lines=%s\n",
-                $mname, join ',', @$lines;
-            next;
-        }
-
-        my $average = do {
-            my $sum = 0;
-            $sum += $_ for @metrics;
-            sprintf '%.2f', $sum / (scalar @metrics);
-        };
-
-        $ret->{$mname} = $average;
-    }
-
-    return $ret;
+    return parse_pidstat_output(\@lines);
 }
 
 1;
