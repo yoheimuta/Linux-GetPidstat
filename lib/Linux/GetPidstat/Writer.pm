@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Time::Piece;
+use Linux::GetPidstat::Writer::File;
 use Linux::GetPidstat::Writer::Mackerel;
 
 my $t = localtime;
@@ -24,9 +25,13 @@ sub output {
         }
     }
 
-    my $new_file;
-    if (my $r = $self->{res_file}) {
-        open($new_file, '>>', $r) or die "failed to open:$!, name=$r";
+    my $file;
+    if ($self->{res_file} || $self->{dry_run}) {
+        $file = Linux::GetPidstat::Writer::File->new(
+            res_file => $self->{res_file},
+            now      => $t,
+            dry_run  => $self->{dry_run},
+        );
     }
 
     my $mackerel;
@@ -41,12 +46,8 @@ sub output {
 
     while (my ($cmd_name, $s) = each %$summary) {
         while (my ($mname, $mvalue) = each %$s) {
-            # datetime は目視確認用に追加
-            my $msg = join (",", $t->datetime, $t->epoch, $cmd_name, $mname, $mvalue);
-            if ($new_file) {
-                print $new_file "$msg\n";
-            } elsif ($self->{dry_run}) {
-                print "$msg\n";
+            if ($file) {
+                $file->output($cmd_name, $mname, $mvalue);
             }
 
             if ($mackerel) {
@@ -54,7 +55,6 @@ sub output {
             }
         }
     }
-    close($new_file) if $new_file;
 }
 
 1;

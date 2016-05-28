@@ -42,8 +42,6 @@
       },
       "runtime" : {
          "requires" : {
-            "Capture::Tiny" : "== 0.40",
-            "Data::Section::Simple" : "== 0.07",
             "IO::Socket::SSL" : "== 2.024",
             "Parallel::ForkManager" : "== 1.17",
             "WebService::Mackerel" : "== 0.03",
@@ -52,6 +50,9 @@
       },
       "test" : {
          "requires" : {
+            "Capture::Tiny" : "== 0.40",
+            "Data::Section::Simple" : "== 0.07",
+            "Path::Tiny" : "== 0.094",
             "Test::Mock::Guard" : "0.10",
             "Test::More" : "0.98"
          }
