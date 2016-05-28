@@ -5,6 +5,7 @@ use warnings;
 
 use Exporter qw(import);
 use Carp;
+use List::Util qw(sum);
 
 our @EXPORT = qw(parse_pidstat_output);
 
@@ -13,39 +14,23 @@ sub parse ($) {
 
     my $ret;
 
-    my $mapping = _get_metric_param_mapping();
-    while (my ($mname, $param) = each %$mapping) {
-        my @metrics;
-        for (@$lines) {
-            my @num = split " ";
-            # carp "$_," for @num;
-            my $m = $num[$param->{column_num}];
-            next unless $m && $m =~ /^[0-9.]+$/;
-            if (my $cf = $param->{convert_func}) {
-                push @metrics, $cf->($m);
-            } else {
-                push @metrics, $m;
-            }
-        }
-        unless (@metrics) {
-            carp (sprintf "empty metrics: mname=%s, lines=%s\n",
-                $mname, join ',', @$lines);
-            next;
+    my $mapping = _get_metric_rule_mapping();
+    while (my ($name, $rule) = each %$mapping) {
+        my $metric = _get_metric_mean($rule, $lines);
+        unless ($metric) {
+            carp (sprintf "Empty metric: name=%s, lines=%s\n",
+                $name, join ',', @$lines);
+            return;
         }
 
-        my $average = do {
-            my $sum = 0;
-            $sum += $_ for @metrics;
-            sprintf '%.2f', $sum / (scalar @metrics);
-        };
-
-        $ret->{$mname} = $average;
+        # ex. cpu => 21.0
+        $ret->{$name} = $metric;
     }
 
     return $ret;
 }
 
-sub _get_metric_param_mapping() {
+sub _get_metric_rule_mapping() {
     my $convert_from_kilobytes = sub { my $raw = shift; return $raw * 1000 };
 
     return {
@@ -82,6 +67,29 @@ sub _get_metric_param_mapping() {
             column_num   => 19,
         },
     };
+}
+
+sub _get_metric_mean($$) {
+    my ($rule, $lines) = @_;
+
+    my @metrics;
+
+    for (@$lines) {
+        my $metric = (split " ")[$rule->{column_num}];
+        next unless $metric && $metric =~ /^[0-9.]+$/;
+
+        if (my $cf = $rule->{convert_func}) {
+            $metric = $cf->($metric);
+        }
+        push @metrics, $metric;
+    }
+
+    return unless @metrics;
+    return _mean(@metrics);
+}
+
+sub _mean(@) {
+    return sprintf '%.2f', sum(@_)/@_;
 }
 
 *parse_pidstat_output = \&parse;
