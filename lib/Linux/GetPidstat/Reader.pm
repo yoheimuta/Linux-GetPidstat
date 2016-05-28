@@ -3,6 +3,9 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Carp;
+use Path::Tiny qw/path/;
+
 sub new {
     my ( $class, %opt ) = @_;
     bless \%opt, $class;
@@ -11,67 +14,35 @@ sub new {
 sub get_cmd_pid_mapping {
     my $self = shift;
 
-    opendir my $pid_dir, $self->{pid_dir}
-        or die "failed to opendir:$!, name=" . $self->{pid_dir};
-
-    my @pid_files;
-    foreach(readdir $pid_dir){
-        next if /^\.{1,2}$/;
-
-        my $path = $self->{pid_dir} . "/$_";
-        my $ok = open my $pid_file, '<', $path;
-        unless ($ok) {
-            print "failed to open: err=$!, path=$path\n";
-            next;
-        }
-        chomp(my $pid = <$pid_file>);
-        close $pid_file;
-
-        unless ($pid =~ /^[0-9]+$/) {
-            print "invalid pid: value=$pid\n";
-            next;
-        }
-        push @pid_files, { $_ => $pid+0 };
-    }
-    closedir($pid_dir);
-
-    die "not found pids in pid_dir: " . $self->{pid_dir} unless @pid_files;
-
-    $self->include_child_pids(\@pid_files) if $self->{include_child};
+    my $pid_dir = path($self->{pid_dir});
 
     my @cmd_pid_mapping;
-    for my $info (@pid_files) {
-        while (my ($cmd_name, $pid) = each %$info) {
+    for my $pid_file ($pid_dir->children) {
+        chomp(my $pid = $pid_file->slurp);
+        unless (_is_valid_pid($pid)) {
+            next;
+        }
+
+        my @pids;
+        push @pids, $pid;
+
+        if ($self->{include_child}) {
+            my $child_pids = $self->search_child_pids($pid);
+            push @pids, @$child_pids;
+        }
+
+        for (@pids) {
             push @cmd_pid_mapping, {
-                cmd => $cmd_name,
-                pid => $pid,
+                cmd => $pid_file->basename,
+                pid => $_+0,
             };
         }
     }
+
     return \@cmd_pid_mapping;
 }
 
-sub include_child_pids {
-    my ($self, $pid_files) = @_;
-
-    my @append_files;
-    for my $info (@$pid_files) {
-        while (my ($cmd_name, $pid) = each %$info) {
-            my $child_pids = $self->_search_child_pids($pid);
-            for my $child_pid (@$child_pids) {
-                unless ($child_pid =~ /^[0-9]+$/) {
-                    print "invalid child_pid: value=$child_pid\n";
-                    next;
-                }
-                push @append_files, { $cmd_name => $child_pid+0 };
-            }
-        }
-    }
-
-    push @$pid_files, @append_files;
-}
-
-sub _search_child_pids {
+sub search_child_pids {
     my ($self, $pid) = @_;
     my $command = do {
         if ($self->{dry_run}) {
@@ -84,7 +55,16 @@ sub _search_child_pids {
     return [] unless $output;
 
     chomp(my @child_pids = split '\n', $output);
-    return [grep { $_ != $pid } @child_pids];
+    return [grep { $_ != $pid && _is_valid_pid($pid) } @child_pids];
+}
+
+sub _is_valid_pid {
+    my $pid = shift;
+    unless ($pid =~ /^[0-9]+$/) {
+        carp "invalid pid: $pid";
+        return 0;
+    }
+    return 1;
 }
 
 1;

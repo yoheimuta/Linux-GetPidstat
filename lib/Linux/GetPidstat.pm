@@ -5,6 +5,7 @@ use warnings;
 
 our $VERSION = "0.01";
 
+use Carp;
 use Linux::GetPidstat::Reader;
 use Linux::GetPidstat::Collector;
 use Linux::GetPidstat::Writer;
@@ -22,6 +23,10 @@ sub run {
         include_child => $self->{include_child},
         dry_run       => $self->{dry_run},
     )->get_cmd_pid_mapping;
+
+    unless (@$cmd_pid_mapping) {
+        croak "Not found pids in pid_dir: " . $self->{pid_dir};
+    }
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => $self->{interval},
