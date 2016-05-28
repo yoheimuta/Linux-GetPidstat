@@ -57,5 +57,16 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/yoheimuta/Linux-GetPidstat/issues"
+      },
+      "homepage" : "https://github.com/yoheimuta/Linux-GetPidstat",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/yoheimuta/Linux-GetPidstat.git",
+         "web" : "https://github.com/yoheimuta/Linux-GetPidstat"
+      }
+   },
    "version" : "0.01"
 }

@@ -9,6 +9,7 @@ use Time::Piece;
 use Parallel::ForkManager;
 use WebService::Mackerel;
 use Linux::GetPidstat::Input;
+use Linux::GetPidstat::Output;
 
 my $t = localtime;
 my $convert_from_kilobytes = sub { my $raw = shift; return $raw * 1000 };
@@ -104,7 +105,13 @@ sub run {
     }
     $pm->wait_all_children;
 
-    $self->write_ret($ret_pidstats);
+    my $writer = Linux::GetPidstat::Output->new(
+        res_file              => $self->{res_file},
+        mackerel_api_key      => $self->{mackerel_api_key},
+        mackerel_service_name => $self->{mackerel_service_name},
+        dry_run               => $self->{dry_run},
+    );
+    $writer->output($ret_pidstats);
 }
 
 sub get_pidstat {
@@ -159,60 +166,6 @@ sub _parse_ret {
     }
 
     return $ret;
-}
-
-sub write_ret {
-    my ($self, $ret_pidstats) = @_;
-
-    my $new_file;
-    if (my $r = $self->{res_file}) {
-        open($new_file, '>>', $r) or die "failed to open:$!, name=$r";
-    }
-
-    my $summary;
-    while (my ($cmd_name, $rets) = each %$ret_pidstats) {
-        for my $ret (@{$rets}) {
-            while (my ($mname, $mvalue) = each %$ret) {
-                $summary->{$cmd_name}->{$mname} += $mvalue;
-            }
-        }
-    }
-
-    while (my ($cmd_name, $s) = each %$summary) {
-        while (my ($mname, $mvalue) = each %$s) {
-            # datetime は目視確認用に追加
-            my $msg = join (",", $t->datetime, $t->epoch, $cmd_name, $mname, $mvalue);
-            if ($new_file) {
-                print $new_file "$msg\n";
-            } elsif ($self->{dry_run}) {
-                print "$msg\n";
-            }
-
-            if ($self->{mackerel_api_key} && $self->{mackerel_service_name}) {
-                if ($self->{dry_run}) {
-                    print "mackerel post: cmd_name=$cmd_name, mname=$mname, mvalue=$mvalue\n";
-                } else {
-                    $self->_send_mackerel($cmd_name, $mname, $mvalue);
-                }
-            }
-        }
-    }
-    close($new_file) if $new_file;
-}
-
-sub _send_mackerel {
-    my ($self, $cmd_name, $mname, $mvalue) = @_;
-    my $graph_name = "custom.batch_$mname.$cmd_name";
-
-    my $mackerel = WebService::Mackerel->new(
-        api_key      => $self->{mackerel_api_key},
-        service_name => $self->{mackerel_service_name},
-    );
-    return $mackerel->post_service_metrics([{
-        "name"  => $graph_name,
-        "time"  => $t->epoch,
-        "value" => $mvalue,
-    }]);
 }
 
 1;
