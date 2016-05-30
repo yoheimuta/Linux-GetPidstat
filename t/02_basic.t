@@ -2,15 +2,30 @@ use strict;
 use warnings;
 use Test::More 0.98;
 use Test::Fatal;
+use Test::Mock::Guard;
 use Capture::Tiny qw/capture/;
 
 use Linux::GetPidstat;
 
 my %cli_default_opt = (
-    pid_dir       => './pid',
+    pid_dir       => 't/assets/pid',
     include_child => '1',
     interval      => '60',
     dry_run       => '1'
+);
+
+my $guard = Test::Mock::Guard->new(
+    'Linux::GetPidstat::Reader' => {
+        _command_search_child_pids => sub {
+            my ($pid) = shift;
+            return "cat t/assets/source/pstree_$pid.txt";
+        },
+    },
+    'Linux::GetPidstat::Collector' => {
+        _command_get_pidstat => sub {
+            return "cat t/assets/source/metric.txt";
+        },
+    },
 );
 
 my $instance = Linux::GetPidstat->new;

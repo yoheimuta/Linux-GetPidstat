@@ -26,7 +26,6 @@ sub run {
     my $program_pid_mapping = Linux::GetPidstat::Reader->new(
         pid_dir       => $pid_dir_path,
         include_child => $args{include_child},
-        dry_run       => $args{dry_run},
     )->get_program_pid_mapping;
 
     unless (@$program_pid_mapping) {
@@ -35,7 +34,6 @@ sub run {
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => $args{interval},
-        dry_run  => $args{dry_run},
     )->get_pidstats_results($program_pid_mapping);
 
     unless (%$ret_pidstats) {

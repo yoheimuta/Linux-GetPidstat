@@ -2,18 +2,27 @@ use strict;
 use warnings;
 use Test::More 0.98;
 use Test::Fatal;
+use Test::Mock::Guard;
 
 use Linux::GetPidstat::Reader;
 
 my %opt = (
-    pid_dir       => './pid',
+    pid_dir       => 't/assets/pid',
     include_child => '0',
-    dry_run       => '1'
 );
 
 is exception {
     my $instance = Linux::GetPidstat::Reader->new(%opt);
 }, undef, "create ok";
+
+my $guard = Test::Mock::Guard->new(
+    'Linux::GetPidstat::Reader' => {
+        _command_search_child_pids => sub {
+            my ($pid) = shift;
+            return "cat t/assets/source/pstree_$pid.txt";
+        },
+    },
+);
 
 subtest 'include_child 0' => sub {
     my $instance = Linux::GetPidstat::Reader->new(%opt);

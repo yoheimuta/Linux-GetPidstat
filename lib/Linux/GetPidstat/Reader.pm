@@ -44,18 +44,18 @@ sub get_program_pid_mapping {
 
 sub search_child_pids {
     my ($self, $pid) = @_;
-    my $command = do {
-        if ($self->{dry_run}) {
-            "cat ./source/pstree_$pid.txt";
-        } else {
-            "pstree -pn $pid |grep -o '([[:digit:]]*)' |grep -o '[[:digit:]]*'";
-        }
-    };
-    my $output = `$command`;
+    my $command = _command_search_child_pids($pid);
+    my $output  = `$command`;
     return [] unless $output;
 
     chomp(my @child_pids = split '\n', $output);
     return [grep { $_ != $pid && _is_valid_pid($pid) } @child_pids];
+}
+
+# for mock in tests
+sub _command_search_child_pids {
+    my $pid = shift;
+    return "pstree -pn $pid |grep -o '([[:digit:]]*)' |grep -o '[[:digit:]]*'";
 }
 
 sub _is_valid_pid {
@@ -83,7 +83,6 @@ Linux::GetPidstat::Reader - Collect pids from a pid dir path
     my $instance = Linux::GetPidstat::Reader->new(
         pid_dir       => './pid',
         include_child => 1,
-        dry_run       => 1,
     );
     my $pids = $instance->get_program_pid_mapping;
 

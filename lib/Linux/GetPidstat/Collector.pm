@@ -52,19 +52,18 @@ sub get_pidstats_results {
 
 sub get_pidstat {
     my ($self, $pid) = @_;
-    my $command = do {
-        if ($self->{dry_run}) {
-            "cat ./source/metric.txt";
-        } else {
-            my $run_sec = $self->{interval};
-            "pidstat -h -u -r -s -d -w -p $pid 1 $run_sec";
-        }
-    };
-    my $output = `$command`;
-    croak "failed command: $command, pid=$$" unless $output;
+    my $command = _command_get_pidstat($pid, $self->{interval});
+    my $output  = `$command`;
+    croak "Failed a command: $command, pid=$$" unless $output;
 
     my @lines = split '\n', $output;
     return parse_pidstat_output(\@lines);
+}
+
+# for mock in tests
+sub _command_get_pidstat {
+    my ($pid, $interval) = @_;
+    return "pidstat -h -u -r -s -d -w -p $pid 1 $interval";
 }
 
 sub summarize($) {
@@ -99,7 +98,6 @@ Linux::GetPidstat::Collector - Collect pidstats' results
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => '60',
-        dry_run  => '0',
     )->get_pidstats_results($program_pid_mapping);
 
 =cut

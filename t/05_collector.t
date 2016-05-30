@@ -2,17 +2,25 @@ use strict;
 use warnings;
 use Test::More 0.98;
 use Test::Fatal;
+use Test::Mock::Guard;
 
 use Linux::GetPidstat::Collector;
 
 my %opt = (
     interval => '60',
-    dry_run  => '1',
 );
 
 is exception {
     my $instance = Linux::GetPidstat::Collector->new(%opt);
 }, undef, "create ok";
+
+my $guard = Test::Mock::Guard->new(
+    'Linux::GetPidstat::Collector' => {
+        _command_get_pidstat => sub {
+            return "cat t/assets/source/metric.txt";
+        },
+    },
+);
 
 my $instance = Linux::GetPidstat::Collector->new(%opt);
 
