@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
+use Capture::Tiny qw/capture/;
 use Parallel::ForkManager;
 use Linux::GetPidstat::Collector::Parser;
 
@@ -20,11 +21,20 @@ sub get_pidstats_results {
     my $pm = Parallel::ForkManager->new(scalar @$program_pid_mapping);
     $pm->run_on_finish(sub {
         if (my $ret = $_[5]) {
-            my ($program_name, $ret_pidstat) = @$ret;
-            push @{$ret_pidstats->{$program_name}}, $ret_pidstat;
-        } else {
-            carp "Failed to collect metrics";
+            my ($program_name, $ret_pidstat, $stdout, $stderr, $exception) = @$ret;
+
+            print "child stdout=$stdout" if $stdout;
+            carp  "child stderr=$stderr" if $stderr;
+            # NOTE: croak is appropriate ?
+            carp  "child exception=$exception" if $exception;
+
+            if ($program_name && $ret_pidstat) {
+                push @{$ret_pidstats->{$program_name}}, $ret_pidstat;
+                return;
+            }
         }
+
+        carp "Failed to collect metrics";
     });
 
     METHODS:
@@ -38,12 +48,19 @@ sub get_pidstats_results {
             next METHODS;
         }
 
-        my $ret_pidstat = $self->get_pidstat($pid);
-        unless ($ret_pidstat && %$ret_pidstat) {
-            croak "Failed getting pidstat: pid=$$, target_pid=$pid, program_name=$program_name";
-        }
+        my ($ret_pidstat, $stdout, $stderr);
+        eval {
+            ($stdout, $stderr) = capture {
+                $ret_pidstat = $self->get_pidstat($pid);
+                unless ($ret_pidstat && %$ret_pidstat) {
+                    croak sprintf
+                        "Failed getting pidstat: pid=%d, target_pid=%d, program_name=%s",
+                        $$, $pid, $program_name;
+                }
+            };
+        };
 
-        $pm->finish(0, [$program_name, $ret_pidstat]);
+        $pm->finish(0, [$program_name, $ret_pidstat, $stdout, $stderr, $@]);
     }
     $pm->wait_all_children;
 
@@ -53,10 +70,16 @@ sub get_pidstats_results {
 sub get_pidstat {
     my ($self, $pid) = @_;
     my $command = _command_get_pidstat($pid, $self->{interval});
-    my $output  = `$command`;
-    croak "Failed a command: $command, pid=$$" unless $output;
+    my ($stdout, $stderr, $exit) = capture { system $command };
 
-    my @lines = split '\n', $output;
+    if ($stderr) {
+        carp "Failed a command?: $command, pid=$$, stderr=$stderr";
+    }
+    if (!$stdout or $exit != 0) {
+        croak "Failed a command: $command, pid=$$, stdout=$stdout, exit=$exit";
+    }
+
+    my @lines = split '\n', $stdout;
     return parse_pidstat_output(\@lines);
 }
 

@@ -59,4 +59,24 @@ like exception {
     $instance->run(%cli_default_opt);
 }, qr/Not found pids in pid_dir:/;
 
+$cli_default_opt{pid_dir} = 't/assets/pid';
+{
+    my $guard_local = Test::Mock::Guard->new(
+        'Linux::GetPidstat::Reader' => {
+            _command_search_child_pids => sub {
+                my ($pid) = shift;
+                return "cat t/assets/source/pstree_$pid.txt";
+            },
+        },
+        'Linux::GetPidstat::Collector' => {
+            _command_get_pidstat => sub {
+                return "cat t/assets/source/invalid_metric.txt";
+            },
+        },
+    );
+    like exception {
+        $instance->run(%cli_default_opt);
+    }, qr/Failed to collect metrics/;
+}
+
 done_testing;

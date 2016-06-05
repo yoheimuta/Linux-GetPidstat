@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More 0.98;
 use Data::Section::Simple qw(get_data_section);
+use Capture::Tiny qw/capture/;
 
 use Linux::GetPidstat::Collector::Parser;
 
@@ -38,6 +39,17 @@ my @lines = split '\n', $output;
         'stk_ref'            => '25500.00',
         'stk_size'           => '128500.00'
     } or diag explain $parsed;
+}
+
+{
+    # data is missing
+    my @parts = @lines[0..2];
+
+    my ($stdout, $stderr, $parsed) = capture {
+        parse_pidstat_output(\@parts);
+    };
+    ok !$parsed or diag explain $parsed;
+    like $stderr, qr/Empty metric: name=/ or diag $stderr;
 }
 
 done_testing;

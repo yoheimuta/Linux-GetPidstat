@@ -3,6 +3,7 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 use Test::Mock::Guard;
+use Capture::Tiny qw/capture/;
 
 use Linux::GetPidstat::Collector;
 
@@ -86,6 +87,72 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
             'stk_size' => '385500'
         }
     } or diag explain $ret;
+}
+
+{
+    my $guard_local = Test::Mock::Guard->new(
+        'Linux::GetPidstat::Collector' => {
+            _command_get_pidstat => sub {
+                return "cat t/assets/not_found_source/metric.txt";
+            },
+        },
+    );
+    my ($stdout, $stderr, $ret) = capture {
+        $instance->get_pidstats_results([
+            { program_name => 'backup_mysql' , pid => '14423' },
+            { program_name => 'summarize_log', pid => '14530' },
+            { program_name => 'summarize_log', pid => '14533' }, # child process
+            { program_name => 'summarize_log', pid => '14534' }, # child process
+        ]);
+    };
+    ok !%$ret or diag explain $ret;
+
+    my @stderr_lines = split /\n/, $stderr;
+    my ($failed_collect, $failed_command, $stderr_command);
+    for (@stderr_lines) {
+        $failed_collect++
+            if /Failed to collect metrics/;
+        $failed_command++
+            if /child exception=Failed a command: cat t\/assets\/not_found_source\/metric.txt/;
+        $stderr_command++
+            if /child stderr=/;
+    }
+    is $failed_collect, 4 or diag $stderr;
+    is $failed_command, 4 or diag $stderr;
+    ok !$stderr_command   or diag $stderr;
+}
+
+{
+    my $guard_local = Test::Mock::Guard->new(
+        'Linux::GetPidstat::Collector' => {
+            _command_get_pidstat => sub {
+                return "cat t/assets/source/invalid_metric.txt";
+            },
+        },
+    );
+    my ($stdout, $stderr, $ret) = capture {
+        $instance->get_pidstats_results([
+            { program_name => 'backup_mysql' , pid => '14423' },
+            { program_name => 'summarize_log', pid => '14530' },
+            { program_name => 'summarize_log', pid => '14533' }, # child process
+            { program_name => 'summarize_log', pid => '14534' }, # child process
+        ]);
+    };
+    ok !%$ret or diag explain $ret;
+
+    my @stderr_lines = split /\n/, $stderr;
+    my ($failed_collect, $failed_command, $stderr_command);
+    for (@stderr_lines) {
+        $failed_collect++
+            if /Failed to collect metrics/;
+        $failed_command++
+            if /child exception=Failed getting pidstat:/;
+        $stderr_command++
+            if /child stderr=/;
+    }
+    is $failed_collect, 4 or diag $stderr;
+    is $failed_command, 4 or diag $stderr;
+    ok !$stderr_command   or diag $stderr;
 }
 
 done_testing;
