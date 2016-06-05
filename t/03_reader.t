@@ -3,6 +3,7 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 use Test::Mock::Guard;
+use Capture::Tiny qw/capture/;
 
 use Linux::GetPidstat::Reader;
 
@@ -55,6 +56,46 @@ subtest 'include_child 1' => sub {
     is_deeply [sort { $a <=> $b } @{$got->{target_script}}] , [1] or diag explain $got;
     is_deeply [sort { $a <=> $b } @{$got->{target_script2}}],
         [2, 18352, 18353, 18360, 18366, 28264] or diag explain $got;
+};
+
+$opt{pid_dir} = 't/assets/invalid_pid';
+subtest 'all pid are invalid' => sub {
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
+    my ($stdout, $stderr, $mapping) = capture {
+        $instance->get_program_pid_mapping;
+    };
+    is scalar @$mapping, 0 or diag explain $mapping;
+    like $stderr, qr/invalid pid: dummy/ or diag $stderr;
+    like $stderr, qr/invalid pid: one/ or diag $stderr;
+};
+
+$opt{pid_dir} = 't/assets/valid_invalid_pid';
+subtest 'some pid are valid or invalid' => sub {
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
+    my ($stdout, $stderr, $mapping) = capture {
+        $instance->get_program_pid_mapping;
+    };
+    is scalar @$mapping, 1 or diag explain $mapping;
+    like $stderr, qr/invalid pid: dummy/ or diag $stderr;
+};
+
+subtest 'include_child 1, but commands fail' => sub {
+    my $guard_local = Test::Mock::Guard->new(
+        'Linux::GetPidstat::Reader' => {
+            _command_search_child_pids => sub {
+                my ($pid) = shift;
+                return "cat t/assets/not_found_source/pstree_$pid.txt";
+            },
+        },
+    );
+
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
+    my ($stdout, $stderr, $mapping) = capture {
+        $instance->get_program_pid_mapping;
+    };
+    is scalar @$mapping, 1 or diag explain $mapping;
+    like $stderr, qr{Failed a command: cat t/assets/not_found_source/pstree}
+        or diag $stderr;
 };
 
 done_testing;

@@ -20,7 +20,7 @@ sub run {
 
     my $pid_dir_path = $args{pid_dir};
     unless (length $pid_dir_path) {
-        Carp::croak("pid_dir required");
+        croak("pid_dir required");
     }
 
     my $program_pid_mapping = Linux::GetPidstat::Reader->new(

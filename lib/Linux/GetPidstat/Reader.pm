@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Carp;
+use Capture::Tiny qw/capture/;
 use Path::Tiny qw/path/;
 
 sub new {
@@ -45,10 +46,16 @@ sub get_program_pid_mapping {
 sub search_child_pids {
     my ($self, $pid) = @_;
     my $command = _command_search_child_pids($pid);
-    my $output  = `$command`;
-    return [] unless $output;
+    my ($stdout, $stderr, $exit) = capture { system $command };
 
-    chomp(my @child_pids = split '\n', $output);
+    if ($stderr or $exit != 0) {
+        carp "Failed a command: $command, stdout=$stdout, stderr=$stderr, exit=$exit";
+    }
+    if (!$stdout) {
+        return [];
+    }
+
+    chomp(my @child_pids = split '\n', $stdout);
     return [grep { $_ != $pid && _is_valid_pid($pid) } @child_pids];
 }
 

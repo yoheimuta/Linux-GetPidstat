@@ -45,7 +45,6 @@ subtest 'output to a file' => sub {
 
 $cli_default_opt{mackerel_api_key}      = 'dummy_key';
 $cli_default_opt{mackerel_service_name} = 'dummy_name';
-
 subtest 'output to a file and mackerel' => sub {
     my ($stdout, $stderr) = capture {
         $instance->run(%cli_default_opt);
@@ -54,5 +53,10 @@ subtest 'output to a file and mackerel' => sub {
     is scalar @stdout_lines, 43, or diag $stdout;
     is $stderr, '' or diag $stderr;
 };
+
+$cli_default_opt{pid_dir} = 't/assets/invalid_pid';
+like exception {
+    $instance->run(%cli_default_opt);
+}, qr/Not found pids in pid_dir:/;
 
 done_testing;
