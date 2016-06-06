@@ -5,6 +5,7 @@ use warnings;
 
 use Time::Piece;
 use WebService::Mackerel;
+use JSON::XS qw/decode_json/;
 
 sub new {
     my ( $class, %opt ) = @_;
@@ -28,11 +29,20 @@ sub output {
         return;
     }
 
-    $self->{mackerel}->post_service_metrics([{
+    my $res = $self->{mackerel}->post_service_metrics([{
         "name"  => $graph_name,
         "time"  => $self->{now}->epoch,
         "value" => $metric,
     }]);
+    my $content = decode_json $res; # die if it is failed
+
+    my $is_success = $content->{success} || 0;
+    if ($is_success != JSON::true or $content->{error}) {
+        use Data::Dumper;
+        local $Data::Dumper::Terse  = 1;
+        local $Data::Dumper::Indent = 0;
+        die "Mackerel output is failed: res=" . Data::Dumper::Dumper($content);
+    }
 }
 
 1;
