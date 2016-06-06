@@ -3,7 +3,6 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Carp;
 use Capture::Tiny qw/capture/;
 use Parallel::ForkManager;
 use Linux::GetPidstat::Collector::Parser;
@@ -21,12 +20,10 @@ sub get_pidstats_results {
     my $pm = Parallel::ForkManager->new(scalar @$program_pid_mapping);
     $pm->run_on_finish(sub {
         if (my $ret = $_[5]) {
-            my ($program_name, $ret_pidstat, $stdout, $stderr, $exception) = @$ret;
+            my ($program_name, $ret_pidstat, $stdout, $stderr) = @$ret;
 
-            print "child stdout=$stdout" if $stdout;
-            carp  "child stderr=$stderr" if $stderr;
-            # NOTE: croak is appropriate ?
-            carp  "child exception=$exception" if $exception;
+            print $stdout, "\n" if $stdout;
+            warn  $stderr if $stderr;
 
             if ($program_name && $ret_pidstat) {
                 push @{$ret_pidstats->{$program_name}}, $ret_pidstat;
@@ -34,7 +31,7 @@ sub get_pidstats_results {
             }
         }
 
-        carp "Failed to collect metrics";
+        warn "Failed to collect metrics\n";
     });
 
     METHODS:
@@ -48,19 +45,17 @@ sub get_pidstats_results {
             next METHODS;
         }
 
-        my ($ret_pidstat, $stdout, $stderr);
-        eval {
-            ($stdout, $stderr) = capture {
-                $ret_pidstat = $self->get_pidstat($pid);
-                unless ($ret_pidstat && %$ret_pidstat) {
-                    croak sprintf
-                        "Failed getting pidstat: pid=%d, target_pid=%d, program_name=%s",
-                        $$, $pid, $program_name;
-                }
-            };
+        my $ret_pidstat;
+        my ($stdout, $stderr) = capture {
+            $ret_pidstat = $self->get_pidstat($pid);
+            unless ($ret_pidstat && %$ret_pidstat) {
+                warn sprintf
+                    "Failed getting pidstat: pid=%d, target_pid=%d, program_name=%s\n",
+                    $$, $pid, $program_name;
+            }
         };
 
-        $pm->finish(0, [$program_name, $ret_pidstat, $stdout, $stderr, $@]);
+        $pm->finish(0, [$program_name, $ret_pidstat, $stdout, $stderr]);
     }
     $pm->wait_all_children;
 
@@ -73,10 +68,11 @@ sub get_pidstat {
     my ($stdout, $stderr, $exit) = capture { system $command };
 
     if ($stderr) {
-        carp "Failed a command?: $command, pid=$$, stderr=$stderr";
+        warn "Failed a command?: $command, pid=$$, stderr=$stderr";
     }
     if (!$stdout or $exit != 0) {
-        croak "Failed a command: $command, pid=$$, stdout=$stdout, exit=$exit";
+        warn "Failed a command: $command, pid=$$, stdout=$stdout, exit=$exit\n";
+        return;
     }
 
     my @lines = split '\n', $stdout;

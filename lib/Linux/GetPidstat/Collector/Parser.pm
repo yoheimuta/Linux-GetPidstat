@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-use Carp;
 use List::Util qw(sum);
 
 our @EXPORT = qw(parse_pidstat_output);
@@ -18,7 +17,7 @@ sub parse ($) {
     while (my ($name, $rule) = each %$mapping) {
         my $metric = _get_metric_mean($rule, $lines);
         unless ($metric) {
-            carp (sprintf "Empty metric: name=%s, lines=%s\n",
+            warn (sprintf "Empty metric: name=%s, lines=%s\n",
                 $name, join ',', @$lines);
             return;
         }

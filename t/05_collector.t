@@ -108,18 +108,22 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     ok !%$ret or diag explain $ret;
 
     my @stderr_lines = split /\n/, $stderr;
-    my ($failed_collect, $failed_command, $stderr_command);
+    my ($failed_collect, $failed_get, $failed_command, $stderr_command);
     for (@stderr_lines) {
         $failed_collect++
             if /Failed to collect metrics/;
+        $failed_get++
+            if /Failed getting pidstat:/;
         $failed_command++
-            if /child exception=Failed a command: cat t\/assets\/not_found_source\/metric.txt/;
+            if /Failed a command: cat t\/assets\/not_found_source\/metric.txt/;
         $stderr_command++
-            if /child stderr=/;
+            if /Failed a command?: cat t\/assets\/not_found_source\/metric.txt/;
     }
     is $failed_collect, 4 or diag $stderr;
+    is $failed_get    , 4 or diag $stderr;
     is $failed_command, 4 or diag $stderr;
-    ok !$stderr_command   or diag $stderr;
+    is $stderr_command, 4 or diag $stderr;
+    is scalar @stderr_lines, 16 or diag $stderr;
 }
 
 {
@@ -141,18 +145,22 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     ok !%$ret or diag explain $ret;
 
     my @stderr_lines = split /\n/, $stderr;
-    my ($failed_collect, $failed_command, $stderr_command);
+    my ($failed_collect, $failed_get, $failed_command, $empty_metric);
     for (@stderr_lines) {
         $failed_collect++
             if /Failed to collect metrics/;
+        $failed_get++
+            if /Failed getting pidstat:/;
         $failed_command++
-            if /child exception=Failed getting pidstat:/;
-        $stderr_command++
-            if /child stderr=/;
+            if /Failed a command: cat t\/assets\/not_found_source\/metric.txt/;
+        $empty_metric++
+            if /Empty metric: name=/;
     }
     is $failed_collect, 4 or diag $stderr;
-    is $failed_command, 4 or diag $stderr;
-    ok !$stderr_command   or diag $stderr;
+    is $failed_get    , 4 or diag $stderr;
+    ok !$failed_command or diag $stderr;
+    is $empty_metric  , 4 or diag $stderr;
+    is scalar @stderr_lines, 12 or diag $stderr;
 }
 
 done_testing;
