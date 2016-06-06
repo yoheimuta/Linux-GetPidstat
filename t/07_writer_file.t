@@ -74,4 +74,12 @@ $opt{res_file} = '';
     $tempfile->spew('');
 }
 
+$opt{dry_run} = 0;
+
+{
+    like exception {
+        my $instance = Linux::GetPidstat::Writer::File->new(%opt);
+    }, qr/failed to open:No such file or directory, name=/;
+}
+
 done_testing;
