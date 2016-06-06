@@ -3,6 +3,7 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Carp;
 use Time::Piece;
 use WebService::Mackerel;
 use JSON::XS qw/decode_json/;
@@ -34,14 +35,18 @@ sub output {
         "time"  => $self->{now}->epoch,
         "value" => $metric,
     }]);
-    my $content = decode_json $res; # die if it is failed
+    my $content = eval { decode_json $res; };
+    if (chomp $@) {
+        carp "Failed mackerel post service metrics: err=$@, res=$res";
+        return;
+    }
 
     my $is_success = $content->{success} || 0;
     if ($is_success != JSON::true or $content->{error}) {
         use Data::Dumper;
         local $Data::Dumper::Terse  = 1;
         local $Data::Dumper::Indent = 0;
-        die "Mackerel output is failed: res=" . Data::Dumper::Dumper($content);
+        carp "Failed mackerel post service metrics: res=" . Data::Dumper::Dumper($content);
     }
 }
 

@@ -77,9 +77,38 @@ $opt{dry_run} = 0;
     );
 
     my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
-    like exception {
+    my ($stdout, $stderr) = capture {
         $instance->output('backup_mysql', 'cpu', '21.20');
-    }, qr/Mackerel output is failed: res={'error' => 'Authentication failed\. Please try with valid Api Key\.'}/;
+    };
+
+    my @stderr_lines = split /\n/, $stderr;
+    is scalar @stderr_lines, 1 or diag $stderr;
+    like $stderr_lines[0],
+        qr/Failed mackerel post service metrics: res=\{'error' => 'Authentication failed\. Please try with valid Api Key\.'}/
+        or diag $stderr;
+    is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
+}
+
+{
+    my $guard = Test::Mock::Guard->new(
+        'WebService::Mackerel' => {
+            post_service_metrics => sub {
+                my ($self, $args) = @_;
+                return 'not json';
+            },
+        },
+    );
+
+    my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
+    my ($stdout, $stderr) = capture {
+        $instance->output('backup_mysql', 'cpu', '21.20');
+    };
+
+    my @stderr_lines = split /\n/, $stderr;
+    is scalar @stderr_lines, 1 or diag $stderr;
+    like $stderr_lines[0],
+        qr/Failed mackerel post service metrics: err='null' expected, at character offset 0 \(before "not json"\)/
+        or diag $stderr;
     is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
 }
 
