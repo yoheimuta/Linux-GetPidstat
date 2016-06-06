@@ -16,7 +16,7 @@ sub parse ($) {
     my $mapping = _get_metric_rule_mapping();
     while (my ($name, $rule) = each %$mapping) {
         my $metric = _get_metric_mean($rule, $lines);
-        unless ($metric) {
+        unless (defined $metric) {
             warn (sprintf "Empty metric: name=%s, lines=%s\n",
                 $name, join ',', @$lines);
             return;
@@ -75,7 +75,7 @@ sub _get_metric_mean($$) {
 
     for (@$lines) {
         my $metric = (split " ")[$rule->{column_num}];
-        next unless $metric && $metric =~ /^[0-9.]+$/;
+        next unless defined $metric && $metric =~ /^[-+]?[0-9.]+$/;
 
         if (my $cf = $rule->{convert_func}) {
             $metric = $cf->($metric);
