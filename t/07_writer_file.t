@@ -4,9 +4,13 @@ use Test::More 0.98;
 use Test::Fatal;
 use Test::Mock::Guard;
 use Capture::Tiny qw/capture/;
-
 use Path::Tiny;
 use Time::Piece;
+
+use POSIX qw/tzset/;
+$ENV{TZ} = 'Asia/Tokyo';
+tzset;
+
 use Linux::GetPidstat::Writer::File;
 
 my $tempfile = Path::Tiny->tempfile;

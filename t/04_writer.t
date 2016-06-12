@@ -6,7 +6,11 @@ use Test::Mock::Guard;
 use Capture::Tiny qw/capture/;
 use Time::Piece;
 use Path::Tiny;
-use Data::Section::Simple qw(get_data_section);
+use Data::Section::Simple qw/get_data_section/;
+
+use POSIX qw/tzset/;
+$ENV{TZ} = 'Asia/Tokyo';
+tzset;
 
 use Linux::GetPidstat::Writer;
 

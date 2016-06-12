@@ -3,9 +3,13 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 use Test::Mock::Guard;
-use Data::Section::Simple qw(get_data_section);
+use Data::Section::Simple qw/get_data_section/;
 use Path::Tiny;
 use Capture::Tiny qw/capture/;
+
+use POSIX qw/tzset/;
+$ENV{TZ} = 'Asia/Tokyo';
+tzset;
 
 use Linux::GetPidstat;
 
