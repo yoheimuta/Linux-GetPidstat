@@ -44,7 +44,7 @@ like exception {
 my $tempfile = Path::Tiny->tempfile;
 my %cli_default_opt = (
     pid_dir       => 't/assets/invalid_pid',
-    res_file      => $tempfile->canonpath,
+    res_file      => $tempfile,
     include_child => '1',
     datetime      => '2016-06-10 00:00:00',
     interval      => '60',

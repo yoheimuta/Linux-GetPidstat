@@ -12,7 +12,7 @@ use Linux::GetPidstat::Writer::File;
 my $tempfile = Path::Tiny->tempfile;
 my $t = localtime 1464430676;
 my %opt = (
-    res_file => $tempfile->canonpath,
+    res_file => $tempfile,
     now     => $t,
     dry_run => '0',
 );
