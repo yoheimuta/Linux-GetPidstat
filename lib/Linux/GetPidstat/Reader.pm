@@ -48,10 +48,11 @@ sub search_child_pids {
     my $command = _command_search_child_pids($pid);
     my ($stdout, $stderr, $exit) = capture { system $command };
 
-    if ($stderr or $exit != 0) {
+    if (length $stderr or $exit != 0) {
+        chomp ($stderr);
         carp "Failed a command: $command, stdout=$stdout, stderr=$stderr, exit=$exit";
     }
-    if (!$stdout) {
+    unless (length $stdout) {
         return [];
     }
 

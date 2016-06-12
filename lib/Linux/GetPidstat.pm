@@ -35,7 +35,7 @@ sub run {
     }
 
     my $datetime;
-    unless ($args{datetime}) {
+    unless (length $args{datetime}) {
         $datetime = localtime;
     } else {
         $datetime = localtime->from_mysql_datetime($args{datetime});

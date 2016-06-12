@@ -16,7 +16,7 @@ sub output {
     my ($self, $ret_pidstats) = @_;
 
     my $file;
-    if ($self->{res_file}) {
+    if (length $self->{res_file}) {
         $file = Linux::GetPidstat::Writer::File->new(
             res_file => $self->{res_file},
             now      => $self->{now},
@@ -25,7 +25,7 @@ sub output {
     }
 
     my $mackerel;
-    if ($self->{mackerel_api_key} && $self->{mackerel_service_name}) {
+    if (length $self->{mackerel_api_key} && length $self->{mackerel_service_name}) {
         $mackerel = Linux::GetPidstat::Writer::Mackerel->new(
             mackerel_api_key      => $self->{mackerel_api_key},
             mackerel_service_name => $self->{mackerel_service_name},

@@ -16,7 +16,6 @@ sub new {
 sub output {
     my ($self, $program_name, $metric_name, $metric) = @_;
 
-    # datetime は目視確認用に追加
     my $msg = join ",", $self->{now}->datetime, $self->{now}->epoch,
         $program_name, $metric_name, $metric;
 
