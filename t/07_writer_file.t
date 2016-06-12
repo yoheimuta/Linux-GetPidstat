@@ -12,10 +12,15 @@ use Linux::GetPidstat::Writer::File;
 my $tempfile = Path::Tiny->tempfile;
 my $t = localtime 1464430676;
 my %opt = (
-    res_file => $tempfile,
     now     => $t,
     dry_run => '0',
 );
+
+like exception {
+    my $instance = Linux::GetPidstat::Writer::File->new(%opt);
+}, qr/failed to open:No such file or directory, name=/;
+
+$opt{res_file} = $tempfile;
 
 is exception {
     my $instance = Linux::GetPidstat::Writer::File->new(%opt);
@@ -51,35 +56,6 @@ $opt{dry_run} = 1;
 
     # cleanup
     $tempfile->spew('');
-}
-
-$opt{res_file} = '';
-
-{
-    my $instance = Linux::GetPidstat::Writer::File->new(%opt);
-    my ($stdout, $stderr) = capture {
-        $instance->output('backup_mysql', 'cpu', '21.20');
-    };
-
-    my @stdout_lines = split /\n/, $stdout;
-    is scalar @stdout_lines, 1 or diag $stdout;
-    is $stdout_lines[0],
-        '(dry_run) file write: 2016-05-28T19:17:56,1464430676,backup_mysql,cpu,21.20';
-    is $stderr, '';
-
-    my $got = $tempfile->slurp;
-    is $got, '';
-
-    # cleanup
-    $tempfile->spew('');
-}
-
-$opt{dry_run} = 0;
-
-{
-    like exception {
-        my $instance = Linux::GetPidstat::Writer::File->new(%opt);
-    }, qr/failed to open:No such file or directory, name=/;
 }
 
 done_testing;

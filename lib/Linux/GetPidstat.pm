@@ -25,6 +25,15 @@ sub run {
         croak("pid_dir required");
     }
 
+    my $res_file              = $args{res_file};
+    my $mackerel_api_key      = $args{mackerel_api_key};
+    my $mackerel_service_name = $args{mackerel_service_name};
+    unless (length $res_file || (
+            length $mackerel_api_key &&
+            length $mackerel_service_name)) {
+        croak("res_file or mackerel_[api_key|service_name] required");
+    }
+
     my $datetime;
     unless ($args{datetime}) {
         $datetime = localtime;

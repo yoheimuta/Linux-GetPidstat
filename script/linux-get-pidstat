@@ -46,10 +46,10 @@ linux-get-pidstat - cli tool for Linux::GetPidstat
       Options:
         --pid_dir               A directory path for pid files
         --res_file              A file path to be stored results
-        --interval              Interval second to be given as a pidstat argument
-        --dry_run               Dry run mode. not run the side-effects operation
+        --interval              Interval second to be given as a pidstat argument (default:60)
+        --dry_run               Dry run mode. not run the side-effects operation (default:1)
         --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
-        --include_child         Flag to be enabled to include child process metrics
+        --include_child         Flag to be enabled to include child process metrics (default:1)
         --mackerel_api_key      An api key to be used for posting to mackerel
         --mackerel_service_name An mackerel service name
       Requirement Programs: pidstat and pstree commands

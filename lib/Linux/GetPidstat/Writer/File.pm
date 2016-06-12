@@ -9,11 +9,9 @@ sub new {
     my ( $class, %opt ) = @_;
 
     my $path = $opt{res_file} || '';
-    unless (open $opt{file}, '>>', $path) {
-        die "failed to open:$!, name=$path" unless $opt{dry_run};
-    } else {
-        $opt{file}->autoflush;
-    }
+    open $opt{file}, '>>', $path or
+        die "failed to open:$!, name=$path";
+    $opt{file}->autoflush;
 
     bless \%opt, $class;
 }

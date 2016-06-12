@@ -16,7 +16,7 @@ sub output {
     my ($self, $ret_pidstats) = @_;
 
     my $file;
-    if ($self->{res_file} || $self->{dry_run}) {
+    if ($self->{res_file}) {
         $file = Linux::GetPidstat::Writer::File->new(
             res_file => $self->{res_file},
             now      => $self->{now},
