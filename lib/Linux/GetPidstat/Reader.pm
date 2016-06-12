@@ -82,7 +82,7 @@ __END__
 
 =head1 NAME
 
-Linux::GetPidstat::Reader - Collect pids from a pid dir path
+Linux::GetPidstat::Reader - Read each pid info from a pid dir path
 
 =head1 SYNOPSIS
 

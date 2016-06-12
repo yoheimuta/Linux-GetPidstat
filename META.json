@@ -1,5 +1,5 @@
 {
-   "abstract" : "Run pidstat -w -s -u -d -r commands in parallel to monitor each process metrics avg/1min",
+   "abstract" : "Monitor each process metrics avg using each pidfile",
    "author" : [
       "yoheimuta <yoheimuta@gmail.com>"
    ],

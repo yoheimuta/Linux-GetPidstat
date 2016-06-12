@@ -76,20 +76,20 @@ __END__
 
 =head1 NAME
 
-Linux::GetPidstat - Run pidstat -w -s -u -d -r commands in parallel to monitor each process metrics avg/1min
+Linux::GetPidstat - Monitor each process metrics avg using each pidfile
 
 =head1 SYNOPSIS
 
     use Linux::GetPidstat;
 
-    my $stat = Linux::GetPidstat->new(%opt);
-    $stat->run;
+    my $stat = Linux::GetPidstat->new;
+    $stat->run(%opt);
 
 =head1 DESCRIPTION
 
 Run C<pidstat -w -s -u -d -r> commands in parallel to monitor each process metrics avg/1min.
 
-Output to stdout, a specified file or C<Mackerel> https://mackerel.io.
+Output to a specified file [and|or] C<mackerel service> https://mackerel.io.
 
 =head2 Motivation
 
@@ -111,7 +111,6 @@ Running pidstat manually is not appropriate in this situation, because
 
 pidstat
 pstree
-grep
 
 =head2 Usage
 
@@ -124,17 +123,8 @@ Prepare pid files in a specified directory.
 
 Run the script every 1 mininute.
 
-    # vi /etc/cron.d/get_pidstat
-    * * * * * user carton exec -- perl /path/to/get_pidstat.pl --dry_run=0 --pid_dir=/tmp/pid_dir --res_dir=/tmp/bstat.log
-
-    # or run manually
-    $ cat run.sh
-    carton exec -- perl /path/to/get_pidstat.pl \
-    --dry_run=0 \
-    --pid_dir=/tmp/pid_dir \
-    --res_dir=/tmp/bstat.log &
-    sleep 60
-    $ while true; do sh run.sh; done
+    # vi /etc/cron.d/linux-get-pidstat
+    * * * * * user carton exec -- linux-get-pidstat --dry_run=0 --pid_dir=/tmp/pid_dir --res_dir=/tmp/bstat.log
 
 Done, you can monitor the result.
 
@@ -163,11 +153,30 @@ Done, you can monitor the result.
 
 Post the results to service metrics.
 
-    carton exec -- perl /path/to/get_pidstat.pl \
+    $ carton exec -- linux-get-pidstat \
     --dry_run=0 \
     --pid_dir=/tmp/pid_dir \
     --mackerel_api_key=yourkey \
     --mackerel_service_name=yourservice
+
+=head3 Help
+
+Display how to use.
+
+    $ carton exec -- linux-get-pidstat --help
+    Usage:
+            linux-get-pidstat - command description
+              Usage: command [options]
+              Options:
+                --pid_dir               A directory path for pid files
+                --res_file              A file path to be stored results
+                --interval              Interval second to be given as a pidstat argument (default:60)
+                --dry_run               Dry run mode. not run the side-effects operation (default:1)
+                --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
+                --include_child         Flag to be enabled to include child process metrics (default:1)
+                --mackerel_api_key      An api key to be used for posting to mackerel
+                --mackerel_service_name An mackerel service name
+              Requirement Programs: pidstat and pstree commands
 
 =head1 LICENSE
 
