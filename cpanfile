@@ -3,6 +3,7 @@ requires 'Parallel::ForkManager', '==1.17';
 requires 'WebService::Mackerel', '==0.03';
 requires 'IO::Socket::SSL', '==2.024';
 requires 'JSON::XS', '== 3.01';
+requires 'Time::Piece::MySQL', '== 0.06';
 
 on 'test' => sub {
     requires 'Test::More', '0.98';

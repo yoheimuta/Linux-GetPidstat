@@ -26,7 +26,7 @@ sub output {
         $program_name, $metric_name, $metric;
 
     if ($self->{dry_run}) {
-        print "$msg\n";
+        print "(dry_run) file write: $msg\n";
         return;
     }
 

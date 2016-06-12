@@ -43,7 +43,7 @@ $opt{dry_run} = 1;
     my @stdout_lines = split /\n/, $stdout;
     is scalar @stdout_lines, 1 or diag $stdout;
     is $stdout_lines[0],
-        '2016-05-28T19:17:56,1464430676,backup_mysql,cpu,21.20';
+        '(dry_run) file write: 2016-05-28T19:17:56,1464430676,backup_mysql,cpu,21.20';
     is $stderr, '';
 
     my $got = $tempfile->slurp;
@@ -64,7 +64,7 @@ $opt{res_file} = '';
     my @stdout_lines = split /\n/, $stdout;
     is scalar @stdout_lines, 1 or diag $stdout;
     is $stdout_lines[0],
-        '2016-05-28T19:17:56,1464430676,backup_mysql,cpu,21.20';
+        '(dry_run) file write: 2016-05-28T19:17:56,1464430676,backup_mysql,cpu,21.20';
     is $stderr, '';
 
     my $got = $tempfile->slurp;

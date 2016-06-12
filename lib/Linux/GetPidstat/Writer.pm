@@ -7,7 +7,6 @@ use Time::Piece;
 use Linux::GetPidstat::Writer::File;
 use Linux::GetPidstat::Writer::Mackerel;
 
-my $t = localtime;
 sub new {
     my ( $class, %opt ) = @_;
     bless \%opt, $class;
@@ -20,7 +19,7 @@ sub output {
     if ($self->{res_file} || $self->{dry_run}) {
         $file = Linux::GetPidstat::Writer::File->new(
             res_file => $self->{res_file},
-            now      => $t,
+            now      => $self->{now},
             dry_run  => $self->{dry_run},
         );
     }
@@ -30,7 +29,7 @@ sub output {
         $mackerel = Linux::GetPidstat::Writer::Mackerel->new(
             mackerel_api_key      => $self->{mackerel_api_key},
             mackerel_service_name => $self->{mackerel_service_name},
-            now                   => $t,
+            now                   => $self->{now},
             dry_run               => $self->{dry_run},
         );
     }

@@ -3,13 +3,16 @@ use warnings;
 use Test::More 0.98;
 use Test::Fatal;
 use Capture::Tiny qw/capture/;
+use Time::Piece;
 
 use Linux::GetPidstat::Writer;
 
+my $t = localtime 1464430676;
 my %opt = (
     res_file              => '',
     mackerel_api_key      => '',
     mackerel_service_name => '',
+    now                   => $t,
     dry_run               => '1',
 );
 

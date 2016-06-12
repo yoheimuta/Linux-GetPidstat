@@ -25,7 +25,7 @@ sub output {
     my $graph_name = "custom.batch_$metric_name.$program_name";
 
     if ($self->{dry_run}) {
-        printf "mackerel post: name=%s, time=%s, metric=%s\n",
+        printf "(dry_run) mackerel post: name=%s, time=%s, metric=%s\n",
             $graph_name, $self->{now}->epoch, $metric;
         return;
     }

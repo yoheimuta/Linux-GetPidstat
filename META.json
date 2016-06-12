@@ -45,6 +45,7 @@
             "IO::Socket::SSL" : "== 2.024",
             "JSON::XS" : "== 3.01",
             "Parallel::ForkManager" : "== 1.17",
+            "Time::Piece::MySQL" : "== 0.06",
             "WebService::Mackerel" : "== 0.03",
             "perl" : "5.008001"
          }

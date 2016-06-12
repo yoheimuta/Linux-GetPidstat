@@ -6,6 +6,8 @@ use warnings;
 our $VERSION = "0.01";
 
 use Carp;
+use Time::Piece::MySQL;
+
 use Linux::GetPidstat::Reader;
 use Linux::GetPidstat::Collector;
 use Linux::GetPidstat::Writer;
@@ -21,6 +23,13 @@ sub run {
     my $pid_dir_path = $args{pid_dir};
     unless (length $pid_dir_path) {
         croak("pid_dir required");
+    }
+
+    my $datetime;
+    unless ($args{datetime}) {
+        $datetime = localtime;
+    } else {
+        $datetime = localtime->from_mysql_datetime($args{datetime});
     }
 
     my $program_pid_mapping = Linux::GetPidstat::Reader->new(
@@ -44,6 +53,7 @@ sub run {
         res_file              => $args{res_file},
         mackerel_api_key      => $args{mackerel_api_key},
         mackerel_service_name => $args{mackerel_service_name},
+        now                   => $datetime,
         dry_run               => $args{dry_run},
     )->output($ret_pidstats);
 }
