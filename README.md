@@ -1,3 +1,7 @@
+<div>
+    <a href="https://travis-ci.org/yoheimuta/Linux-GetPidstat"><img src="https://travis-ci.org/yoheimuta/Linux-GetPidstat.svg?branch=master"></a>
+</div>
+
 # NAME
 
 Linux::GetPidstat - Run pidstat -w -s -u -d -r commands in parallel to monitor each process metrics avg/1min

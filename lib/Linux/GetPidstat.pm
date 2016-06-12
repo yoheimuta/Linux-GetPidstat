@@ -72,6 +72,8 @@ __END__
 
 =encoding utf-8
 
+=for html <a href="https://travis-ci.org/yoheimuta/Linux-GetPidstat"><img src="https://travis-ci.org/yoheimuta/Linux-GetPidstat.svg?branch=master"></a>
+
 =head1 NAME
 
 Linux::GetPidstat - Run pidstat -w -s -u -d -r commands in parallel to monitor each process metrics avg/1min
