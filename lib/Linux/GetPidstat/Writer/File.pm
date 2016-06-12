@@ -3,16 +3,13 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Path::Tiny qw/path/;
 use IO::Handle;
 
 sub new {
     my ( $class, %opt ) = @_;
 
-    my $path = $opt{res_file} || '';
-    open $opt{file}, '>>', $path or
-        die "failed to open:$!, name=$path";
-    $opt{file}->autoflush;
-
+    $opt{file} = path($opt{res_file});
     bless \%opt, $class;
 }
 
@@ -28,15 +25,7 @@ sub output {
         return;
     }
 
-    my $file = $self->{file};
-    print $file "$msg\n";
-}
-
-sub DESTROY {
-    my $self = shift;
-    if (my $file = $self->{file}) {
-        close $file;
-    }
+    $self->{file}->append("$msg\n");
 }
 
 1;

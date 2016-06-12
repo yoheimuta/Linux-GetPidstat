@@ -18,7 +18,7 @@ my %opt = (
 
 like exception {
     my $instance = Linux::GetPidstat::Writer::File->new(%opt);
-}, qr/failed to open:No such file or directory, name=/;
+}, qr/Path::Tiny paths require defined, positive-length parts/;
 
 $opt{res_file} = $tempfile;
 
