@@ -100,7 +100,7 @@ subtest 'output to a file (dry_run=1)' => sub {
     };
 
     my @lines = split /\n/, $stdout;
-    is scalar @lines, 25 or diag $stdout;
+    is scalar @lines, 18 or diag $stdout;
     is $stderr, '' or diag $stderr;
 
     # did not write to a file
@@ -143,7 +143,7 @@ subtest 'output to a file and mackerel (dry_run=1)' => sub {
     };
 
     my @lines = split /\n/, $stdout;
-    is scalar @lines, 43 or diag $stdout;
+    is scalar @lines, 36 or diag $stdout;
     is $stderr, '' or diag $stderr;
 
     # did not write to a file

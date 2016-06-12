@@ -7,6 +7,10 @@ use Capture::Tiny qw/capture/;
 use Parallel::ForkManager;
 use Linux::GetPidstat::Collector::Parser;
 
+my $GETPIDSTAT_DEBUG = sub {
+    $ENV{GETPIDSTAT_DEBUG} ? 1 : 0;
+};
+
 sub new {
     my ( $class, %opt ) = @_;
     bless \%opt, $class;
@@ -23,7 +27,7 @@ sub get_pidstats_results {
             my ($program_name, $ret_pidstat, $stdout, $stderr) = @$ret;
 
             print $stdout, "\n" if $stdout;
-            warn  $stderr if $stderr;
+            warn  $stderr       if $stderr;
 
             if ($program_name && $ret_pidstat) {
                 push @{$ret_pidstats->{$program_name}}, $ret_pidstat;
@@ -31,7 +35,7 @@ sub get_pidstats_results {
             }
         }
 
-        warn "Failed to collect metrics\n";
+        warn "Failed to collect metrics\n" if $GETPIDSTAT_DEBUG->();
     });
 
     METHODS:
@@ -41,7 +45,7 @@ sub get_pidstats_results {
 
         if (my $child_pid = $pm->start) {
             printf "child_pid=%d, program_name=%s, target_pid=%d\n",
-                $child_pid, $program_name, $pid;
+                $child_pid, $program_name, $pid if $GETPIDSTAT_DEBUG->();
             next METHODS;
         }
 
@@ -67,11 +71,11 @@ sub get_pidstat {
     my $command = _command_get_pidstat($pid, $self->{interval});
     my ($stdout, $stderr, $exit) = capture { system $command };
 
-    if ($stderr) {
-        warn "Failed a command?: $command, pid=$$, stderr=$stderr";
-    }
-    if (!$stdout or $exit != 0) {
-        warn "Failed a command: $command, pid=$$, stdout=$stdout, exit=$exit\n";
+    if (!$stdout or $stderr or $exit != 0) {
+        chomp($stderr);
+        warn sprintf
+            "Failed a command: %s, pid=%d, stdout=%s, stderr=%s, exit=%s\n",
+            $command, $$, $stdout, $stderr, $exit;
         return;
     }
 

@@ -89,6 +89,8 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     } or diag explain $ret;
 }
 
+local $ENV{GETPIDSTAT_DEBUG} = 1;
+
 {
     my $guard_local = Test::Mock::Guard->new(
         'Linux::GetPidstat::Collector' => {
@@ -108,7 +110,7 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
     ok !%$ret or diag explain $ret;
 
     my @stderr_lines = split /\n/, $stderr;
-    my ($failed_collect, $failed_get, $failed_command, $stderr_command);
+    my ($failed_collect, $failed_get, $failed_command);
     for (@stderr_lines) {
         $failed_collect++
             if /Failed to collect metrics/;
@@ -116,14 +118,11 @@ my $instance = Linux::GetPidstat::Collector->new(%opt);
             if /Failed getting pidstat:/;
         $failed_command++
             if /Failed a command: cat t\/assets\/not_found_source\/metric.txt/;
-        $stderr_command++
-            if /Failed a command?: cat t\/assets\/not_found_source\/metric.txt/;
     }
     is $failed_collect, 4 or diag $stderr;
     is $failed_get    , 4 or diag $stderr;
     is $failed_command, 4 or diag $stderr;
-    is $stderr_command, 4 or diag $stderr;
-    is scalar @stderr_lines, 16 or diag $stderr;
+    is scalar @stderr_lines, 12 or diag $stderr;
 }
 
 {
