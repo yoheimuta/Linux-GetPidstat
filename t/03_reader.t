@@ -58,6 +58,28 @@ subtest 'include_child 1' => sub {
         [2, 18352, 18353, 18360, 18366, 28264] or diag explain $got;
 };
 
+$opt{max_child_limit} = 3;
+subtest 'limit a number of child' => sub {
+    my $instance = Linux::GetPidstat::Reader->new(%opt);
+    my ($stdout, $stderr, $mapping) = capture {
+        $instance->get_program_pid_mapping;
+    };
+    is scalar @$mapping, 5 or diag explain $mapping;
+    like $stderr, qr/Stop searching child pids. max_child_limit is too little. pid=2/
+        or diag $stderr;
+
+    my $got;
+    for my $info (@$mapping) {
+        my $program_name = $info->{program_name};
+        my $pid          = $info->{pid};
+        push @{$got->{$program_name}}, $pid;
+    }
+
+    is_deeply [sort { $a <=> $b } @{$got->{target_script}}] , [1] or diag explain $got;
+    is_deeply [sort { $a <=> $b } @{$got->{target_script2}}],
+        [2, 18352, 18353, 18360] or diag explain $got;
+};
+
 $opt{pid_dir} = 't/assets/invalid_pid';
 subtest 'all pid are invalid' => sub {
     my $instance = Linux::GetPidstat::Reader->new(%opt);
@@ -79,7 +101,7 @@ subtest 'some pid are valid or invalid' => sub {
     like $stderr, qr/invalid pid: dummy/ or diag $stderr;
 };
 
-subtest 'include_child 1, but commands fail' => sub {
+subtest 'a search child command is failed' => sub {
     my $guard_local = Test::Mock::Guard->new(
         'Linux::GetPidstat::Reader' => {
             _command_search_child_pids => sub {

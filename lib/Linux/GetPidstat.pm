@@ -44,6 +44,7 @@ sub run {
     my $program_pid_mapping = Linux::GetPidstat::Reader->new(
         pid_dir       => $pid_dir_path,
         include_child => $args{include_child},
+        max_child_limit => $args{max_child_limit},
     )->get_program_pid_mapping;
 
     unless (@$program_pid_mapping) {
