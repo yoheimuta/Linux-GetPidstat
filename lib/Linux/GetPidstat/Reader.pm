@@ -56,14 +56,23 @@ sub search_child_pids {
         return [];
     }
 
-    chomp(my @child_pids = split '\n', $stdout);
-    return [grep { $_ != $pid && _is_valid_pid($pid) } @child_pids];
+    my @child_pids;
+
+    my @lines = split '\n', $stdout;
+    for (@lines) {
+        while (/[^{.*}]\((\d+)\)/g) {
+            my $child_pid = $1;
+            next if $child_pid == $pid;
+            push @child_pids, $child_pid;
+        }
+    }
+    return \@child_pids;
 }
 
 # for mock in tests
 sub _command_search_child_pids {
     my $pid = shift;
-    return "pstree -pn $pid |grep -o '([[:digit:]]*)' |grep -o '[[:digit:]]*'";
+    return "pstree -pn $pid";
 }
 
 sub _is_valid_pid {
