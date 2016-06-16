@@ -63,6 +63,14 @@ sub search_child_pids {
         while (/[^{.*}]\((\d+)\)/g) {
             my $child_pid = $1;
             next if $child_pid == $pid;
+
+            # TODO: Remove the limit.
+            ## FIXME: Replace calling pidstat with reading /proc manually
+            my $max = $self->{max_child_limit};
+            if ($max && $max <= scalar @child_pids) {
+                carp "Stop searching child pids. max_child_limit is too little. pid=$pid";
+                last;
+            }
             push @child_pids, $child_pid;
         }
     }

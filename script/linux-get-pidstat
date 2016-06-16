@@ -13,18 +13,20 @@ for my $prog (@progs) {
 
 # get options
 my %opt = (
-    include_child => '1',
-    interval      => '60',
-    dry_run       => '1'
+    include_child   => 1,
+    max_child_limit => 30,
+    interval        => 60,
+    dry_run         => 1,
 );
 GetOptions(
     \%opt, qw/
       pid_dir|p=s
       res_file|r=s
-      interval|i=s
-      dry_run|d=s
+      interval|i=i
+      dry_run|d=i
       datetime|t=s
-      include_child|c=s
+      include_child|c=i
+      max_child_limit|l=i
       mackerel_api_key|m=s
       mackerel_service_name|s=s
       /
@@ -50,6 +52,7 @@ linux-get-pidstat - cli tool for Linux::GetPidstat
         --dry_run               Dry run mode. not run the side-effects operation (default:1)
         --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
         --include_child         Flag to be enabled to include child process metrics (default:1)
+        --max_child_limit       Number to be used for limiting pidstat multi processes (default:30)
         --mackerel_api_key      An api key to be used for posting to mackerel
         --mackerel_service_name An mackerel service name
       Requirement Programs: pidstat and pstree commands
