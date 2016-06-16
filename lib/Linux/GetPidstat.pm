@@ -175,6 +175,7 @@ Display how to use.
                 --dry_run               Dry run mode. not run the side-effects operation (default:1)
                 --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
                 --include_child         Flag to be enabled to include child process metrics (default:1)
+                --max_child_limit       Number to be used for limiting pidstat multi processes (default:30)
                 --mackerel_api_key      An api key to be used for posting to mackerel
                 --mackerel_service_name An mackerel service name
               Requirement Programs: pidstat and pstree commands
