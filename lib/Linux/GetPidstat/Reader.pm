@@ -60,7 +60,7 @@ sub search_child_pids {
 
     my @lines = split '\n', $stdout;
     for (@lines) {
-        while (/[^{.*}]\((\d+)\)/g) {
+        while (/[^}]\((\d+)\)/g) {
             my $child_pid = $1;
             next if $child_pid == $pid;
 
