@@ -15,7 +15,8 @@ for my $prog (@progs) {
 my %opt = (
     include_child   => 1,
     max_child_limit => 30,
-    interval        => 60,
+    interval        => 1,
+    count           => 60,
     dry_run         => 1,
 );
 GetOptions(
@@ -23,6 +24,7 @@ GetOptions(
       pid_dir|p=s
       res_file|r=s
       interval|i=i
+      count|c=i
       dry_run!
       datetime|t=s
       include_child!
@@ -48,7 +50,8 @@ linux-get-pidstat - cli tool for Linux::GetPidstat
       Options:
         --pid_dir               A directory path for pid files
         --res_file              A file path to be stored results
-        --interval              Interval second to be given as a pidstat argument (default:60)
+        --interval              Interval second to be given as a pidstat argument (default:1)
+        --count                 Count number to be given as a pidstat argument (default:60)
         --dry_run               Dry run mode. not run the side-effects operation (default:1) (--no-dry_run is also supported)
         --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
         --include_child         Flag to be enabled to include child process metrics (default:1) (--no-include_child is also suppoted)

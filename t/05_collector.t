@@ -8,7 +8,8 @@ use Capture::Tiny qw/capture/;
 use Linux::GetPidstat::Collector;
 
 my %opt = (
-    interval => '60',
+    interval => 1,
+    count    => 60,
 );
 
 is exception {
