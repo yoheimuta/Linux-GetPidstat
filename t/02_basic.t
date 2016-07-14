@@ -53,10 +53,11 @@ my $tempfile = Path::Tiny->tempfile;
 my %cli_default_opt = (
     pid_dir       => 't/assets/invalid_pid',
     res_file      => $tempfile,
-    include_child => '1',
+    include_child => 1,
     datetime      => '2016-06-10 00:00:00',
-    interval      => '60',
-    dry_run       => '0'
+    interval      => 1,
+    count         => 60,
+    dry_run       => 0
 );
 
 like exception {

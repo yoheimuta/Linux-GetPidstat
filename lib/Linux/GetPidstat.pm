@@ -53,6 +53,7 @@ sub run {
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
         interval => $args{interval},
+        count    => $args{count},
     )->get_pidstats_results($program_pid_mapping);
 
     unless (%$ret_pidstats) {
@@ -88,7 +89,7 @@ Linux::GetPidstat - Monitor each process metrics avg using each pidfile
 
 =head1 DESCRIPTION
 
-Run C<pidstat -w -s -u -d -r> commands in parallel to monitor each process metrics avg/1min.
+Run C<pidstat -h -u -r -s -d -w -p $pid $interval $count> commands in parallel to monitor each process metrics avg/1min.
 
 Output to a specified file [and|or] C<mackerel service> https://mackerel.io.
 
@@ -125,7 +126,7 @@ Prepare pid files in a specified directory.
 Run the script every 1 mininute.
 
     # vi /etc/cron.d/linux-get-pidstat
-    * * * * * user carton exec -- linux-get-pidstat --dry_run=0 --pid_dir=/tmp/pid_dir --res_dir=/tmp/bstat.log
+    * * * * * user carton exec -- linux-get-pidstat --no-dry_run --pid_dir=/tmp/pid_dir --res_dir=/tmp/bstat.log
 
 Done, you can monitor the result.
 
@@ -155,7 +156,7 @@ Done, you can monitor the result.
 Post the results to service metrics.
 
     $ carton exec -- linux-get-pidstat \
-    --dry_run=0 \
+    --no-dry_run \
     --pid_dir=/tmp/pid_dir \
     --mackerel_api_key=yourkey \
     --mackerel_service_name=yourservice
@@ -171,11 +172,12 @@ Display how to use.
               Options:
                 --pid_dir               A directory path for pid files
                 --res_file              A file path to be stored results
-                --interval              Interval second to be given as a pidstat argument (default:60)
-                --dry_run               Dry run mode. not run the side-effects operation (default:1)
+                --interval              Interval second to be given as a pidstat argument (default:1)
+                --count                 Count number to be given as a pidstat argument (default:60)
+                --dry_run               Dry run mode. not run the side-effects operation (default:1) (--no-dry_run is also supported)
                 --datetime              Datetime (ex. '2016-06-10 00:00:00') to be recorded
-                --include_child         Flag to be enabled to include child process metrics (default:1)
-                --max_child_limit       Number to be used for limiting pidstat multi processes (default:30)
+                --include_child         Flag to be enabled to include child process metrics (default:1) (--no-include_child is also suppoted)
+                --max_child_limit       Number to be used for limiting pidstat multi processes (default:30) (skip this limit if 0 is specified)
                 --mackerel_api_key      An api key to be used for posting to mackerel
                 --mackerel_service_name An mackerel service name
               Requirement Programs: pidstat and pstree commands

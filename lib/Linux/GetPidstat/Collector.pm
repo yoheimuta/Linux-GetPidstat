@@ -68,7 +68,7 @@ sub get_pidstats_results {
 
 sub get_pidstat {
     my ($self, $pid) = @_;
-    my $command = _command_get_pidstat($pid, $self->{interval});
+    my $command = _command_get_pidstat($pid, $self->{interval}, $self->{count});
     my ($stdout, $stderr, $exit) = capture { system $command };
 
     if (!$stdout or $stderr or $exit != 0) {
@@ -85,8 +85,8 @@ sub get_pidstat {
 
 # for mock in tests
 sub _command_get_pidstat {
-    my ($pid, $interval) = @_;
-    return "pidstat -h -u -r -s -d -w -p $pid 1 $interval";
+    my ($pid, $interval, $count) = @_;
+    return "pidstat -h -u -r -s -d -w -p $pid $interval $count";
 }
 
 sub summarize($) {
@@ -120,7 +120,8 @@ Linux::GetPidstat::Collector - Collect pidstats' results
     use Linux::GetPidstat::Collector;
 
     my $ret_pidstats = Linux::GetPidstat::Collector->new(
-        interval => '60',
+        interval => '1',
+        count    => '60',
     )->get_pidstats_results($program_pid_mapping);
 
 =cut
