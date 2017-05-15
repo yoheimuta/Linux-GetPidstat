@@ -41,13 +41,15 @@ my $guard = Test::Mock::Guard->new(
 
 my $instance = Linux::GetPidstat->new;
 
-like exception {
-    $instance->run;
-}, qr/pid_dir required/, "no pid_dir is not allowed";
+subtest '_validate_args' => sub {
+    like exception {
+        $instance->_validate_args;
+    }, qr/pid_dir required/, "no pid_dir is not allowed";
 
-like exception {
-    $instance->run(pid_dir => 'pid_dir');
-}, qr/res_file or mackerel_\[api_key|service_name\] required/;
+    like exception {
+        $instance->_validate_args(pid_dir => 'pid_dir');
+    }, qr/res_file or mackerel_\[api_key|service_name\] required/;
+};
 
 my $tempfile = Path::Tiny->tempfile;
 my %cli_default_opt = (

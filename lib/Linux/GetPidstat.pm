@@ -20,20 +20,9 @@ sub new {
 sub run {
     my ($self, %args) = @_;
 
+    $self->_validate_args(%args);
+
     my $pid_dir_path = $args{pid_dir};
-    unless (length $pid_dir_path) {
-        croak("pid_dir required");
-    }
-
-    my $res_file              = $args{res_file};
-    my $mackerel_api_key      = $args{mackerel_api_key};
-    my $mackerel_service_name = $args{mackerel_service_name};
-    unless (length $res_file || (
-            length $mackerel_api_key &&
-            length $mackerel_service_name)) {
-        croak("res_file or mackerel_[api_key|service_name] required");
-    }
-
     my $datetime;
     unless (length $args{datetime}) {
         $datetime = localtime;
@@ -68,6 +57,22 @@ sub run {
         now                        => $datetime,
         dry_run                    => $args{dry_run},
     )->output($ret_pidstats);
+}
+
+sub _validate_args {
+    my ($self, %args) = @_;
+
+    unless (length $args{pid_dir}) {
+        croak("pid_dir required");
+    }
+    my $res_file              = $args{res_file};
+    my $mackerel_api_key      = $args{mackerel_api_key};
+    my $mackerel_service_name = $args{mackerel_service_name};
+    unless (length $res_file || (
+            length $mackerel_api_key &&
+            length $mackerel_service_name)) {
+        croak("res_file or mackerel_[api_key|service_name] required");
+    }
 }
 
 1;
