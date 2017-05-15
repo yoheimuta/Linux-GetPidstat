@@ -18,11 +18,13 @@ my %opt = (
     dry_run                    => '1',
 );
 
-is exception {
-    my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
-}, undef, "create ok";
+subtest 'new' => sub {
+    is exception {
+        my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
+    }, undef, "create ok";
+};
 
-{
+subtest 'dry_run' => sub {
     my $guard = Test::Mock::Guard->new(
         'WebService::Mackerel' => {
             new => sub {
@@ -45,11 +47,11 @@ is exception {
     is $stderr, '';
 
     is $guard->call_count('WebService::Mackerel', 'new'), 1;
-}
+};
 
 $opt{dry_run} = 0;
 
-{
+subtest 'post_service_metrics' => sub {
     my $guard = Test::Mock::Guard->new(
         'WebService::Mackerel' => {
             post_service_metrics => sub {
@@ -65,9 +67,9 @@ $opt{dry_run} = 0;
     my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
     $instance->output('backup_mysql', 'cpu', '21.20');
     is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
-}
+};
 
-{
+subtest 'mackerel_metric_key_prefix' => sub {
     my $guard = Test::Mock::Guard->new(
         'WebService::Mackerel' => {
             post_service_metrics => sub {
@@ -83,52 +85,54 @@ $opt{dry_run} = 0;
     my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt, mackerel_metric_key_prefix => "prefix_");
     $instance->output('backup_mysql', 'cpu', '21.20');
     is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
-}
+};
 
-{
-    my $guard = Test::Mock::Guard->new(
-        'WebService::Mackerel' => {
-            post_service_metrics => sub {
-                my ($self, $args) = @_;
-                return '{"error":"Authentication failed. Please try with valid Api Key."}';
+subtest 'error handling' => sub {
+    subtest 'authentication failed' => sub {
+        my $guard = Test::Mock::Guard->new(
+            'WebService::Mackerel' => {
+                post_service_metrics => sub {
+                    my ($self, $args) = @_;
+                    return '{"error":"Authentication failed. Please try with valid Api Key."}';
+                },
             },
-        },
-    );
+        );
 
-    my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
-    my ($stdout, $stderr) = capture {
-        $instance->output('backup_mysql', 'cpu', '21.20');
+        my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
+        my ($stdout, $stderr) = capture {
+            $instance->output('backup_mysql', 'cpu', '21.20');
+        };
+
+        my @stderr_lines = split /\n/, $stderr;
+        is scalar @stderr_lines, 1 or diag $stderr;
+        like $stderr_lines[0],
+            qr/Failed mackerel post service metrics: res=\{'error' => 'Authentication failed\. Please try with valid Api Key\.'}/
+            or diag $stderr;
+        is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
     };
 
-    my @stderr_lines = split /\n/, $stderr;
-    is scalar @stderr_lines, 1 or diag $stderr;
-    like $stderr_lines[0],
-        qr/Failed mackerel post service metrics: res=\{'error' => 'Authentication failed\. Please try with valid Api Key\.'}/
-        or diag $stderr;
-    is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
-}
-
-{
-    my $guard = Test::Mock::Guard->new(
-        'WebService::Mackerel' => {
-            post_service_metrics => sub {
-                my ($self, $args) = @_;
-                return 'not json';
+    subtest 'not json' => sub {
+        my $guard = Test::Mock::Guard->new(
+            'WebService::Mackerel' => {
+                post_service_metrics => sub {
+                    my ($self, $args) = @_;
+                    return 'not json';
+                },
             },
-        },
-    );
+        );
 
-    my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
-    my ($stdout, $stderr) = capture {
-        $instance->output('backup_mysql', 'cpu', '21.20');
+        my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
+        my ($stdout, $stderr) = capture {
+            $instance->output('backup_mysql', 'cpu', '21.20');
+        };
+
+        my @stderr_lines = split /\n/, $stderr;
+        is scalar @stderr_lines, 1 or diag $stderr;
+        like $stderr_lines[0],
+            qr/Failed mackerel post service metrics: err='null' expected, at character offset 0 \(before "not json"\)/
+            or diag $stderr;
+        is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
     };
-
-    my @stderr_lines = split /\n/, $stderr;
-    is scalar @stderr_lines, 1 or diag $stderr;
-    like $stderr_lines[0],
-        qr/Failed mackerel post service metrics: err='null' expected, at character offset 0 \(before "not json"\)/
-        or diag $stderr;
-    is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
-}
+};
 
 done_testing;
