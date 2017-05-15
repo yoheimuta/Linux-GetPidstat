@@ -64,6 +64,7 @@ sub run {
         res_file              => $args{res_file},
         mackerel_api_key      => $args{mackerel_api_key},
         mackerel_service_name => $args{mackerel_service_name},
+        mackerel_metric_key_prefix => $args{mackerel_metric_key_prefix},
         now                   => $datetime,
         dry_run               => $args{dry_run},
     )->output($ret_pidstats);
@@ -180,6 +181,7 @@ Display how to use.
                 --max_child_limit       Number to be used for limiting pidstat multi processes (default:30) (skip this limit if 0 is specified)
                 --mackerel_api_key      An api key to be used for posting to mackerel
                 --mackerel_service_name An mackerel service name
+                --mackerel_metric_key_prefix  Key prefix of mackerel metric name (default:batch_)
               Requirement Programs: pidstat and pstree commands
 
 =head1 LICENSE

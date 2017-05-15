@@ -101,6 +101,7 @@ Display how to use.
                 --max_child_limit       Number to be used for limiting pidstat multi processes (default:30) (skip this limit if 0 is specified)
                 --mackerel_api_key      An api key to be used for posting to mackerel
                 --mackerel_service_name An mackerel service name
+                --mackerel_metric_key_prefix  Key prefix of mackerel metric name (default:batch_)
               Requirement Programs: pidstat and pstree commands
 
 # LICENSE

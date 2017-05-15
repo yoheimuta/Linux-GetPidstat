@@ -18,6 +18,7 @@ my %opt = (
     interval        => 1,
     count           => 60,
     dry_run         => 1,
+    mackerel_metric_key_prefix => 'batch_',
 );
 GetOptions(
     \%opt, qw/
@@ -31,6 +32,7 @@ GetOptions(
       max_child_limit|l=i
       mackerel_api_key|m=s
       mackerel_service_name|s=s
+      mackerel_metric_key_prefix=s
       /
 ) or pod2usage(2);
 
@@ -58,4 +60,5 @@ linux-get-pidstat - cli tool for Linux::GetPidstat
         --max_child_limit       Number to be used for limiting pidstat multi processes (default:30) (skip this limit if 0 is specified)
         --mackerel_api_key      An api key to be used for posting to mackerel
         --mackerel_service_name An mackerel service name
+        --mackerel_metric_key_prefix  Key prefix of mackerel metric name (default:batch_)
       Requirement Programs: pidstat and pstree commands
