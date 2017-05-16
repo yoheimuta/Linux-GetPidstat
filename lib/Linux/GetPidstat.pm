@@ -51,9 +51,11 @@ sub run {
 
     Linux::GetPidstat::Writer->new(
         res_file                   => $args{res_file},
+        mackerel_metric_type       => $args{mackerel_metric_type},
         mackerel_api_key           => $args{mackerel_api_key},
         mackerel_service_name      => $args{mackerel_service_name},
         mackerel_metric_key_prefix => $args{mackerel_metric_key_prefix},
+        mackerel_host_id           => $args{mackerel_host_id},
         now                        => $datetime,
         dry_run                    => $args{dry_run},
     )->output($ret_pidstats);
@@ -65,14 +67,34 @@ sub _validate_args {
     unless (length $args{pid_dir}) {
         croak("pid_dir required");
     }
-    my $res_file              = $args{res_file};
+
+    my $mackerel_metric_type  = $args{mackerel_metric_type};
     my $mackerel_api_key      = $args{mackerel_api_key};
     my $mackerel_service_name = $args{mackerel_service_name};
-    unless (length $res_file || (
-            length $mackerel_api_key &&
-            length $mackerel_service_name)) {
-        croak("res_file or mackerel_[api_key|service_name] required");
+    if (length $mackerel_metric_type && $mackerel_metric_type eq "service") {
+        unless (length $mackerel_api_key &&
+                length $mackerel_service_name) {
+            croak("when mackerel_metric_type is 'service', mackerel_[api_key|service_name] are required");
+        }
+        return;
     }
+
+    my $mackerel_host_id = $args{mackerel_host_id};
+    if (length $mackerel_metric_type && $mackerel_metric_type eq "host") {
+        unless (length $mackerel_api_key &&
+                length $mackerel_service_name &&
+                length $mackerel_host_id) {
+            croak("when mackerel_metric_type is 'host', mackerel_[api_key|service_name|host_id] are required");
+        }
+        return;
+    }
+
+    my $res_file = $args{res_file};
+    if (length $res_file) {
+        return;
+    }
+
+    croak("res_file or mackerel_metric_type required");
 }
 
 1;
@@ -184,9 +206,11 @@ Display how to use.
                 --datetime                    Datetime (ex. '2016-06-10 00:00:00') to be recorded
                 --include_child               Flag to be enabled to include child process metrics (default:1) (--no-include_child is also suppoted)
                 --max_child_limit             Number to be used for limiting pidstat multi processes (default:30) (skip this limit if 0 is specified)
+                --mackerel_metric_type        Metric type of mackerel (default:service) (only use one of 'service' or 'host')
                 --mackerel_api_key            An api key to be used for posting to mackerel
                 --mackerel_service_name       An mackerel service name
                 --mackerel_metric_key_prefix  Key prefix of mackerel metric name (default:batch_)
+                --mackerel_host_id            An mackerel host id
               Requirement Programs: pidstat and pstree commands
 
 =head1 LICENSE
