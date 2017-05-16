@@ -16,7 +16,7 @@ sub new {
         service_name => $opt{mackerel_service_name},
     );
     $opt{mackerel} = $mackerel;
-    $opt{mackerel_metric_key_prefix} //= "";
+    $opt{mackerel_metric_key_prefix} = "" unless defined $opt{mackerel_metric_key_prefix};
 
     bless \%opt, $class;
 }
