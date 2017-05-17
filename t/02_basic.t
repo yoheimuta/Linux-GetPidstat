@@ -125,8 +125,9 @@ subtest 'output to a file (dry_run=1)' => sub {
 my $output_mkr  = get_data_section('output.mkr');
 my @output_mkr_lines = split '\n', $output_mkr;
 
-$cli_default_opt{mackerel_api_key}      = 'dummy_key';
-$cli_default_opt{mackerel_service_name} = 'dummy_name';
+$cli_default_opt{mackerel_api_key}           = 'dummy_key';
+$cli_default_opt{mackerel_service_name}      = 'dummy_name';
+$cli_default_opt{mackerel_metric_key_prefix} = 'batch_';
 subtest 'output to a file and mackerel' => sub {
     $instance->run(%cli_default_opt);
 

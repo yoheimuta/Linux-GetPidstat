@@ -27,10 +27,11 @@ sub output {
     my $mackerel;
     if (length $self->{mackerel_api_key} && length $self->{mackerel_service_name}) {
         $mackerel = Linux::GetPidstat::Writer::Mackerel->new(
-            mackerel_api_key      => $self->{mackerel_api_key},
-            mackerel_service_name => $self->{mackerel_service_name},
-            now                   => $self->{now},
-            dry_run               => $self->{dry_run},
+            mackerel_api_key           => $self->{mackerel_api_key},
+            mackerel_service_name      => $self->{mackerel_service_name},
+            mackerel_metric_key_prefix => $self->{mackerel_metric_key_prefix},
+            now                        => $self->{now},
+            dry_run                    => $self->{dry_run},
         );
     }
 

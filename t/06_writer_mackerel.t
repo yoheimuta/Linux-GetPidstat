@@ -11,10 +11,11 @@ use Linux::GetPidstat::Writer::Mackerel;
 
 my $t = localtime 12345;
 my %opt = (
-    mackerel_api_key      => 'dummy_key',
-    mackerel_service_name => 'dummy_name',
-    now                   => $t,
-    dry_run               => '1',
+    mackerel_api_key           => 'dummy_key',
+    mackerel_service_name      => 'dummy_name',
+    mackerel_metric_key_prefix => 'batch_',
+    now                        => $t,
+    dry_run                    => '1',
 );
 
 is exception {
@@ -62,6 +63,24 @@ $opt{dry_run} = 0;
     );
 
     my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt);
+    $instance->output('backup_mysql', 'cpu', '21.20');
+    is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
+}
+
+{
+    my $guard = Test::Mock::Guard->new(
+        'WebService::Mackerel' => {
+            post_service_metrics => sub {
+                my ($self, $args) = @_;
+                is $args->[0]->{name} , 'custom.prefix_cpu.backup_mysql';
+                is $args->[0]->{time} , '12345';
+                is $args->[0]->{value}, '21.20';
+                return '{"success":true}';
+            },
+        },
+    );
+
+    my $instance = Linux::GetPidstat::Writer::Mackerel->new(%opt, mackerel_metric_key_prefix => "prefix_");
     $instance->output('backup_mysql', 'cpu', '21.20');
     is $guard->call_count('WebService::Mackerel', 'post_service_metrics'), 1;
 }

@@ -16,13 +16,14 @@ sub new {
         service_name => $opt{mackerel_service_name},
     );
     $opt{mackerel} = $mackerel;
+    $opt{mackerel_metric_key_prefix} = "" unless defined $opt{mackerel_metric_key_prefix};
 
     bless \%opt, $class;
 }
 
 sub output {
     my ($self, $program_name, $metric_name, $metric) = @_;
-    my $graph_name = "custom.batch_$metric_name.$program_name";
+    my $graph_name = sprintf("custom.%s%s.%s", $self->{mackerel_metric_key_prefix}, $metric_name, $program_name);
 
     if ($self->{dry_run}) {
         printf "(dry_run) mackerel post: name=%s, time=%s, metric=%s\n",
