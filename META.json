@@ -73,8 +73,9 @@
          "web" : "https://github.com/yoheimuta/Linux-GetPidstat"
       }
    },
-   "version" : "0.04",
+   "version" : "0.05",
    "x_contributors" : [
-      "Makoto Sasaki <wanigoya@gmail.com>"
+      "Makoto Sasaki <wanigoya@gmail.com>",
+      "Songmu <y.songmu@gmail.com>"
    ]
 }
