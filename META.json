@@ -4,13 +4,13 @@
       "yoheimuta <yoheimuta@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Minilla/v3.0.1, CPAN::Meta::Converter version 2.150001",
+   "generated_by" : "Minilla/v3.1.4, CPAN::Meta::Converter version 2.150010",
    "license" : [
       "perl_5"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
-      "version" : "2"
+      "version" : 2
    },
    "name" : "Linux-GetPidstat",
    "no_index" : {
@@ -75,7 +75,9 @@
    },
    "version" : "0.09",
    "x_contributors" : [
-      "Songmu <y.songmu@gmail.com>",
-      "Makoto Sasaki <wanigoya@gmail.com>"
-   ]
+      "Makoto Sasaki <wanigoya@gmail.com>",
+      "Songmu <y.songmu@gmail.com>"
+   ],
+   "x_serialization_backend" : "JSON::PP version 2.97001",
+   "x_static_install" : 1
 }
